@@ -43,6 +43,7 @@
     var res = await fetch(path, Object.assign({
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       credentials: 'same-origin',
+      cache: 'no-store',
     }, opts || {}));
     var text = await res.text();
     var data = null;
@@ -68,6 +69,23 @@
   async function boot() {
     var session = null;
     try { session = await api('/api/v1/auth/session'); } catch (e) { session = null; }
+    // Отдельный демо-пользователь; административная роль сюда не переносится.
+    var cfg = null;
+    try { cfg = await api('/api/v1/auth/providers'); } catch (e) { /* fail closed */ }
+    if (cfg && cfg.devLogin && cfg.adminLogin && cfg.adminLogin.demoLogin &&
+        (!session || !session.authenticated || session.user.role === 'admin')) {
+      try {
+        var demo = await api('/api/v1/auth/dev-login', {
+          method: 'POST', body: JSON.stringify({ email: 'preview-user@shelter.local', name: 'Демо-пользователь' }),
+        });
+        session = { authenticated: true, user: demo.user };
+      } catch (e) {
+        show('screen-auth');
+        $('#auth-providers').textContent = 'Не удалось открыть демо-кабинет: ' + e.message;
+        $('#dev-form').hidden = true;
+        return;
+      }
+    }
     if (!session || !session.authenticated) {
       await renderGate();
       show('screen-auth');

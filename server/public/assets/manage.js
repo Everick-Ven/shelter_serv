@@ -120,6 +120,22 @@
     } catch (e) {
       session = null;
     }
+    // Временный просмотр панелей без экрана входа (только вне production).
+    var demoCfg = null;
+    try { demoCfg = await api('/api/v1/auth/providers'); } catch (e) { /* fail closed */ }
+    if (demoCfg && demoCfg.adminLogin && demoCfg.adminLogin.demoLogin &&
+        (!session || !session.authenticated || session.user.role !== 'admin')) {
+      try {
+        var demo = await api('/manage/api/demo-login', { method: 'POST', body: {} });
+        session = { authenticated: true, user: demo.user };
+      } catch (e) {
+        show('screen-auth');
+        await renderAuth();
+        $('#auth-error').textContent = 'Не удалось открыть демо-панель: ' + e.message;
+        $('#auth-error').hidden = false;
+        return;
+      }
+    }
     if (!session || !session.authenticated) {
       state.user = null;
       await renderAuth();
@@ -150,8 +166,9 @@
     var demoOn = cfg && cfg.adminLogin
       ? !!cfg.adminLogin.demoLogin
       : !demoBtn.hidden;
-    demoBtn.hidden = !demoOn;
-    demoHint.hidden = !demoOn;
+    $('#login-form').hidden = demoOn;
+    demoBtn.hidden = true;
+    demoHint.hidden = true;
     demoBtn.onclick = async function () {
       errorEl.hidden = true;
       demoBtn.disabled = true;
@@ -193,7 +210,7 @@
     // Служебный dev-вход аккаунтом приложения (скрыт, если выключен).
     var devForm = $('#dev-form');
     var devWrap = devForm.closest('.auth__extra');
-    if (cfg && cfg.devLogin) {
+    if (cfg && cfg.devLogin && !demoOn) {
       devWrap.hidden = false;
       devForm.onsubmit = async function (ev) {
         ev.preventDefault();

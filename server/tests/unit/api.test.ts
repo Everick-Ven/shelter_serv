@@ -1163,6 +1163,6 @@ describe('экран демо-входа', () => {
     expect(page.statusCode).toBe(200);
     expect(page.body).toContain('id="demo-login" type="button">');
     expect(page.headers['cache-control']).toBe('no-store');
-    expect(page.body).toContain('/assets/manage.js?v=demo-login-2');
+    expect(page.body).toContain('/assets/manage.js?v=auto-preview-3');
   });
 });
