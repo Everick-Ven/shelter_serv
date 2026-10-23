@@ -3,547 +3,303 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>SHELTER — браузер-убежище: изоляция сессий и защиты на сетевом уровне</title>
-  <meta name="description" content="SHELTER — десктоп-браузер на Chromium 154 (CEF): трекеры отменяются на сетевом уровне, каждое пространство — отдельная сессия, режим «Призрак» не пишет на диск. Доски с end-to-end шифрованием. Windows x64 и macOS Intel." />
-  <meta name="theme-color" content="#000000" />
-  <meta property="og:title" content="SHELTER — браузер-убежище" />
-  <meta property="og:description" content="Приватность обеспечивает оболочка, а не обещания: изоляция сессий, четыре контура защит, доски с E2EE." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="/assets/img/board-week.jpg" />
+  <title>SHELTER — браузер, который не соглашается следить</title>
+  <meta name="description" content="SHELTER — десктоп-браузер на Chromium 154: трекеры отменяются на сетевом уровне, пространства изолируют сессии, «Призрак» не пишет на диск. Доски с end-to-end шифрованием." />
+  <meta name="theme-color" content="#0b0b0d" />
   <link rel="stylesheet" href="/assets/site.css" />
   <link rel="icon" href="/assets/img/app-icon.png" type="image/png" />
 </head>
 <body>
-  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <a class="skip" href="#main">К содержимому</a>
 
-  <nav class="nav" id="nav">
-    <div class="nav__inner">
-      <a class="nav__brand" href="#top" aria-label="SHELTER — на главную">
-        <img class="nav__icon" src="/assets/img/app-icon.png" width="26" height="26" alt="" />
-        <span class="nav__name">SHELTER</span>
-      </a>
-
-      <div class="nav__links">
-        <a href="#position">Позиция</a>
+  <header class="bar">
+    <div class="bar__in">
+      <a class="bar__mark" href="#top">SHELTER</a>
+      <nav class="bar__links">
         <a href="#isolation">Изоляция</a>
         <a href="#protections">Защиты</a>
-        <a href="#interface">Интерфейс</a>
+        <a href="#boards">Доски</a>
         <a href="#compare">Сравнение</a>
         <a href="#premium">Premium</a>
-      </div>
-
-      <div class="nav__actions">
-        <a class="btn btn--ghost btn--sm" id="nav-account" href="/account">Войти</a>
-        <a class="btn btn--primary btn--sm" href="#download">Скачать</a>
+      </nav>
+      <div class="bar__act">
+        <a class="lnk" id="nav-account" href="/account">Кабинет</a>
+        <a class="cta" href="#download">Скачать</a>
       </div>
     </div>
-  </nav>
+  </header>
 
   <main id="main">
-    <!-- ================= HERO ================= -->
-    <header class="hero" id="top">
-      <div class="hero__glow" aria-hidden="true"></div>
-      <div class="wrap hero__inner">
-        <p class="eyebrow reveal">Браузер-убежище · Chromium 154 · Windows x64 и macOS Intel</p>
-        <h1 class="hero__title reveal">
-          Интернет остался прежним.<br />
-          <span class="grad">Наблюдение — нет.</span>
-        </h1>
-        <p class="hero__subtitle reveal">
-          Обычный браузер не «протекает» случайно — он <b>согласился</b> отдавать данные:
-          нажал «принять все cookies», пропустил трекер-пиксель, пустил рекламный SDK.
-          SHELTER не соглашается: рекламы и трекеров нет на сетевом уровне,
-          каждое пространство — отдельная сессия, а «Призрак» не оставляет следов даже на диске.
-        </p>
-        <div class="hero__cta reveal">
-          <a class="btn btn--primary btn--lg" href="#download">Скачать SHELTER</a>
-          <a class="btn btn--ghost btn--lg" href="#isolation">Как устроена изоляция</a>
+    <!-- Утверждение 1: это убежище, потому что оболочка не соглашается -->
+    <section class="hero" id="top">
+      <div class="wrap hero__grid">
+        <div class="hero__text">
+          <h1>Браузер, который не соглашается следить</h1>
+          <p class="lead">
+            Окно «примите cookies» — это ваше согласие, полученное обманом усталости.
+            SHELTER решает сам: рекламные и трекинговые запросы отменяются до выхода в сеть,
+            минимальный технический набор cookies подтверждается до первого кадра баннера.
+          </p>
+          <div class="hero__cta">
+            <a class="cta cta--lg" href="#download">Скачать для Windows или macOS</a>
+          </div>
+          <p class="hero__meta">Chromium 154 · CEF 154.0.32 · Windows x64 · macOS Intel</p>
         </div>
-        <p class="hero__note reveal">
-          Бесплатно для личного пользования · Premium — синхронизация досок ·
-          Без аккаунта для работы браузера
-        </p>
 
-        <!-- Демонстрация продукта: окно браузера с реальными элементами UI -->
-        <div class="hero__device reveal">
-          <div class="browser mock" role="img"
-               aria-label="Окно SHELTER: пространства Личное, Работа и Призрак, четыре контура защит и счётчик заблокированных трекеров">
-            <div class="browser__bar">
-              <span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span>
-              <div class="mock__spaces" aria-hidden="true">
-                <span class="mock__space mock__space--personal">Личное</span>
-                <span class="mock__space mock__space--work is-active">Работа</span>
-                <span class="mock__space mock__space--ghost">Призрак</span>
-                <span class="mock__space-add" title="Новое пространство">+</span>
-              </div>
-              <div class="browser__url">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-                shelter://app/ — интерфейс загружается с собственной схемы
-              </div>
-              <span class="mock__shield-btn" title="Защита SHELTER">🛡</span>
-            </div>
-            <div class="mock__tabs" aria-hidden="true">
-              <span class="mock__tab is-active">Почта работы</span>
-              <span class="mock__tab">CRM · сделки</span>
-              <span class="mock__tab mock__tab--ghost">Призрак: банчок</span>
-              <span class="mock__tab-add">+</span>
-            </div>
-            <div class="browser__body">
-              <div class="browser__shield">
-                <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/><path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div>
-                  <strong><span id="blocked-count" data-target="1284">0</span> трекеров заблокировано сегодня</strong>
-                  <span>сетевой уровень + косметическая фильтрация · пространство «Работа»</span>
-                </div>
-                <div class="mock__prots" aria-hidden="true">
-                  <label class="mock__prot is-on"><i></i>Трекеры и реклама</label>
-                  <label class="mock__prot is-on"><i></i>Автосогласие cookies</label>
-                  <label class="mock__prot is-on"><i></i>HTTPS-only + DoH</label>
-                  <label class="mock__prot is-on"><i></i>Защита от отпечатка</label>
-                </div>
-              </div>
-              <div class="browser__rows" aria-hidden="true">
-                <span style="--w: 92%"></span>
-                <span style="--w: 74%"></span>
-                <span style="--w: 83%"></span>
-                <span style="--w: 46%"></span>
-              </div>
+        <!-- Фрагмент реального интерфейса продукта -->
+        <figure class="win" data-ui aria-label="Окно SHELTER: пространства, вкладки и панель защит">
+          <div class="win__bar">
+            <span class="win__dot win__dot--r"></span><span class="win__dot win__dot--y"></span><span class="win__dot win__dot--g"></span>
+            <span class="win__space win__space--a">Личное</span>
+            <span class="win__space win__space--b is-on">Работа</span>
+            <span class="win__space win__space--g">Призрак</span>
+            <span class="win__url">shelter://app/</span>
+          </div>
+          <div class="win__tabs">
+            <span class="win__tab is-on">Почта · работа</span>
+            <span class="win__tab">CRM · сделки</span>
+            <span class="win__tab win__tab--g">Призрак</span>
+          </div>
+          <div class="win__body">
+            <div class="win__shield">
+              <b><span id="blocked-count" data-target="1284">0</span> трекеров заблокировано сегодня</b>
+              <span>пространство «Работа» · сетевой уровень и косметика</span>
+              <ul class="win__prots">
+                <li class="is-on">Трекеры и реклама</li>
+                <li class="is-on">Автосогласие cookies</li>
+                <li class="is-on">HTTPS-only + DoH</li>
+                <li class="is-on">Защита от отпечатка</li>
+              </ul>
             </div>
           </div>
-          <p class="mock__caption fine">
-            Интерфейс воспроизводит реальный UI SHELTER: пространства, вкладки, панель
-            «Защита SHELTER» с четырьмя контурами и счётчиком блокировок.
-          </p>
-        </div>
-      </div>
-    </header>
-
-    <!-- ================= ПОЗИЦИЯ ================= -->
-    <section id="position">
-      <div class="wrap wrap--narrow">
-        <p class="eyebrow reveal">Позиция</p>
-        <h2 class="section__title section__title--xl reveal">
-          Проблема не в том, что браузер утекает.<br />
-          <span class="grad">Проблема в том, что он согласился.</span>
-        </h2>
-        <p class="section__lead reveal">
-          Окно «примите cookies» — это театр согласия: пока вы жмёте кнопку,
-          рекламные биржи уже получили идентификатор. Приватность, которая начинается
-          с вашего клика, — не приватность. Поэтому в SHELTER решение принимает не человек
-          и не страница, а оболочка: рекламные и трекинговые запросы отменяются до выхода в сеть,
-          а минимальный технический набор cookies подтверждается сам — до первого кадра баннера.
-        </p>
-        <p class="pos reveal">
-          Одно слово, которое принадлежит SHELTER, — <b>изоляция</b>.
-          Не «приватность вообще» (её обещают все), а изоляция конкретная:
-          сессий, контекстов, процессов и ключей.
-        </p>
-        <div class="stats">
-          <div class="stat reveal"><b>4</b><span>контура защит: трекеры, cookies, HTTPS-only + DoH, отпечаток</span></div>
-          <div class="stat reveal"><b>154</b><span>версия Chromium (CEF 154.0.32) — актуальный движок, а не музей</span></div>
-          <div class="stat reveal"><b>0</b><span>облачных аккаунтов нужно для работы браузера</span></div>
-          <div class="stat reveal"><b>12</b><span>слов BIP39 восстанавливают идентичность досок — сервер не видит фразу</span></div>
-        </div>
+        </figure>
       </div>
     </section>
 
-    <!-- ================= ИЗОЛЯЦИЯ ================= -->
-    <section id="isolation" class="strip">
+    <!-- Утверждение 2: изоляция конкретна -->
+    <section id="isolation">
       <div class="wrap">
-        <p class="eyebrow reveal">Изоляция</p>
-        <h2 class="section__title reveal">Каждое пространство — отдельный человек</h2>
-        <p class="section__lead reveal">
-          Вкладки живут в пространствах, а пространство — это собственный контекст запросов
-          Chromium со своим каталогом профиля. Cookies и хранилища не пересекаются между
-          пространствами так же, как не пересекались бы разные браузеры.
+        <h2>Каждое пространство — отдельная сессия</h2>
+        <p class="lead">
+          Пространство — это собственный контекст запросов Chromium со своим каталогом профиля:
+          cookies и хранилища «Личного» и «Работы» не пересекаются, как не пересекались бы два браузера.
         </p>
-        <div class="grid grid--3">
-          <article class="card reveal">
-            <div class="card__icon">▣</div>
+        <div class="cols cols--3">
+          <div class="col">
             <h3>Пространства</h3>
-            <p>
-              «Личное», «Работа», своё имя и свой цвет: <span class="mono">persist:space-&lt;key&gt;</span> —
-              отдельный <span class="mono">CefRequestContext</span> и каталог профиля.
-              Рекламодатель рабочего сервиса не видит вас в личном.
-            </p>
-          </article>
-          <article class="card reveal">
-            <div class="card__icon">◌</div>
-            <h3>Режим «Призрак»</h3>
-            <p>
-              <span class="mono">temp:ghost-&lt;key&gt;</span> — контекст только в памяти:
-              история, cookies и кэш не пишутся на диск, закрыли вкладку — оболочка сразу
-              освобождает контекст. «Призрак» даже не ходит в сеть за иконками.
-            </p>
-          </article>
-          <article class="card reveal">
-            <div class="card__icon">⌘</div>
-            <h3>Расширения под контролем</h3>
-            <p>
-              Распакованные пакеты (Chrome Web Store по ID, .crx/.zip): manifest v3 отдаётся
-              движку Chromium, v2 оболочка обслуживает сама. Статус проверяется ответом самого
-              расширения, а не верой в аргумент запуска.
-            </p>
-          </article>
+            <p><code>persist:space-&lt;key&gt;</code> — отдельный <code>CefRequestContext</code>
+              и каталог профиля. Рекламодатель рабочего сервиса не видит вас в личном.</p>
+          </div>
+          <div class="col">
+            <h3>Призрак</h3>
+            <p><code>temp:ghost-&lt;key&gt;</code> — контекст только в памяти: история, cookies и кэш
+              не пишутся на диск, закрыли вкладку — контекст освобождён сразу.</p>
+          </div>
+          <div class="col">
+            <h3>Расширения</h3>
+            <p>Распакованные пакеты (Web Store по ID, .crx/.zip): manifest v3 отдаётся движку,
+              v2 оболочка обслуживает сама; статус проверяется ответом самого расширения.</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= ЗАЩИТЫ ================= -->
-    <section id="protections">
+    <!-- Утверждение 3: четыре контура решает оболочка -->
+    <section id="protections" class="field">
       <div class="wrap">
-        <p class="eyebrow reveal">Защиты</p>
-        <h2 class="section__title reveal">Четыре контура, которые решает оболочка</h2>
-        <p class="section__lead reveal">
-          Тумблеры в панели «Защита SHELTER» — не декорация: состояние доставляется в каждый
-          процесс-рендерер при рождении и при навигации, поэтому включённая защита действует
-          и на страницах, открытых уже после переключения.
+        <h2>Четыре контура защиты решает оболочка, а не вы</h2>
+        <p class="lead">
+          Состояние тумблеров доставляется в каждый процесс-рендерер при рождении и при навигации,
+          поэтому защита действует и на страницах, открытых после переключения.
         </p>
-        <div class="grid grid--2x2">
-          <article class="card reveal">
+        <div class="cols cols--4">
+          <div class="col">
             <h3>Трекеры и реклама</h3>
-            <p>
-              Отменяются рекламные и трекинговые запросы — включая подресурсы главного фрейма:
-              Yandex RTB/AdFox, googletagservices, SSP-биржи. Плюс косметическое скрытие
-              рекламных контейнеров на странице.
-            </p>
-          </article>
-          <article class="card reveal">
+            <p>Отменяются рекламные и трекинговые запросы, включая подресурсы главного фрейма:
+              Yandex RTB/AdFox, googletagservices, SSP-биржи. Плюс скрытие рекламных контейнеров.</p>
+          </div>
+          <div class="col">
             <h3>Автосогласие cookies</h3>
-            <p>
-              Подтверждается минимальный технический набор — до первого кадра баннера:
-              окно согласия просто не показывается. Поддержаны известные CMP, включая shadow DOM.
-            </p>
-          </article>
-          <article class="card reveal">
+            <p>Минимальный технический набор подтверждается сам, до первого кадра баннера:
+              окно согласия не показывается. Поддержаны известные CMP, включая shadow DOM.</p>
+          </div>
+          <div class="col">
             <h3>HTTPS-only + DoH</h3>
-            <p>
-              Шифрованный DNS и требование HTTPS: downgrade-нападения и пассивное чтение
-              трафика посредником не проходят.
-            </p>
-          </article>
-          <article class="card reveal">
+            <p>Шифрованный DNS и требование HTTPS: downgrade и пассивное чтение трафика
+              посредником не проходят.</p>
+          </div>
+          <div class="col">
             <h3>Защита от отпечатка</h3>
-            <p>
-              Приватность поверх изоляции: противодействие фингерпринтингу и CNAME-клоакингу,
-              когда трекер прячется за доменом первого лица.
-            </p>
-          </article>
+            <p>Противодействие фингерпринтингу и CNAME-клоакингу, когда трекер прячется
+              за доменом первого лица.</p>
+          </div>
         </div>
-        <div class="posline reveal">
-          Секреты шифруются нативно: ChaCha20 + HMAC-SHA256 в browser-процессе, мастер-ключ
-          не передаётся рендереру; на Windows ключ защищён DPAPI, на macOS — Keychain.
-          «Запасной» рендерер отключён: он мог бы получить страницу уже после переключения
-          тумблеров и применить устаревшее состояние.
-        </div>
+        <p class="note">
+          Секреты шифруются нативно: ChaCha20 + HMAC-SHA256 в browser-процессе, мастер-ключ не
+          передаётся рендереру; Windows защищает ключ DPAPI, macOS — Keychain. «Запасной» рендерер
+          отключён: он мог бы применить устаревшее состояние защит.
+        </p>
       </div>
     </section>
 
-    <!-- ================= ИНТЕРФЕЙС: реальные снимки ================= -->
-    <section id="interface" class="strip">
+    <!-- Утверждение 4: внутри не только браузер -->
+    <section id="boards">
       <div class="wrap">
-        <p class="eyebrow reveal">Интерфейс</p>
-        <h2 class="section__title reveal">Не только браузер: доски, которые не читает сервер</h2>
-        <p class="section__lead reveal">
-          Внутри SHELTER — планировщик с досками: задачи, люди, проекты, сроки.
-          Синхронизация проектируется end-to-end: Ed25519/X25519, фраза восстановления из 12 слов,
-          CRDT-конверты Yjs. Сервер видит размер и время конверта — и не видит содержимое.
+        <h2>Доски, которые сервер не читает</h2>
+        <p class="lead">
+          Планировщик живёт внутри SHELTER: задачи, люди, проекты, сроки. Синхронизация —
+          end-to-end: Ed25519/X25519, фраза восстановления из 12 слов, CRDT-конверты Yjs.
+          Сервер видит размер и время конверта, не содержимое.
         </p>
         <div class="shots">
-          <figure class="shot reveal">
+          <figure>
             <img src="/assets/img/board-week.jpg" width="460" height="345" loading="lazy"
-                 alt="Неделя в доске SHELTER: колонки дней, карточки задач с участниками, статусами и встречами" />
-            <figcaption>
-              Неделя: задачи, встречи и исполнители в одном экране. Карточки принадлежат
-              доске, доска — вашему зашифрованному контексту.
-            </figcaption>
+                 alt="Неделя в доске SHELTER: колонки дней и карточки задач с участниками и статусами" />
+            <figcaption>Неделя: задачи, встречи и исполнители одного пространства.</figcaption>
           </figure>
-          <figure class="shot reveal">
+          <figure>
             <img src="/assets/img/board-month.jpg" width="460" height="460" loading="lazy"
-                 alt="Месяц в доске SHELTER: календарь с полосами отсутствия и счётчиками часов Work day, Truancy, Vacation" />
-            <figcaption>
-              Месяц: полосы отсутствий и счётчики часов (Work day / Truancy / Vacation).
-              Всё хранится локально и шифруется ключом доски.
-            </figcaption>
+                 alt="Месяц в доске SHELTER: календарь с полосами отсутствий и счётчиками часов" />
+            <figcaption>Месяц: полосы отсутствий и счётчики часов Work day, Truancy, Vacation.</figcaption>
           </figure>
         </div>
-        <p class="fine reveal">
-          Снимки — из репозитория SHELTER (<span class="mono">resources/ui/</span>), интерфейс продукта,
-          а не рендер-заглушка.
-        </p>
       </div>
     </section>
 
-    <!-- ================= СРАВНЕНИЕ ================= -->
-    <section id="compare">
+    <!-- Утверждение 5: инкогнито не убежище -->
+    <section id="compare" class="field">
       <div class="wrap">
-        <p class="eyebrow reveal">Сравнение</p>
-        <h2 class="section__title reveal">Почему «инкогнито» — не убежище</h2>
-        <p class="section__lead reveal">
-          Позицию проверяют не слоганом, а таблицей. Ниже — свойства, которые реально
-          отличают оболочку с изоляцией от способов «спрятаться» в обычных браузерах.
-        </p>
-        <div class="compare reveal">
+        <h2>Инкогнито — не убежище</h2>
+        <p class="lead">Свойства, которые отличают оболочку с изоляцией от способов «спрятаться».</p>
+        <div class="tbl">
           <table>
             <thead>
               <tr>
-                <th scope="col">Свойство</th>
-                <th scope="col">Chrome</th>
-                <th scope="col">Инкогнито</th>
-                <th scope="col">Tor Browser</th>
-                <th scope="col">Brave</th>
-                <th scope="col" class="compare__self">SHELTER</th>
+                <th>Свойство</th>
+                <th>Chrome</th>
+                <th>Инкогнито</th>
+                <th>Tor Browser</th>
+                <th>Brave</th>
+                <th class="self">SHELTER</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th scope="row">Изоляция сессий по пространствам</th>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td class="compare__self" data-v="yes">да: свой контекст и профиль</td>
-              </tr>
-              <tr>
-                <th scope="row">Режим без следов на диске</th>
-                <td data-v="no">нет</td>
-                <td data-v="part">частично</td>
-                <td data-v="yes">да</td>
-                <td data-v="part">частично</td>
-                <td class="compare__self" data-v="yes">да: «Призрак» в памяти</td>
-              </tr>
-              <tr>
-                <th scope="row">Блокировка трекеров на сетевом уровне</th>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="part">частично</td>
-                <td data-v="yes">да</td>
-                <td class="compare__self" data-v="yes">да + косметика</td>
-              </tr>
-              <tr>
-                <th scope="row">Согласие cookies без окна баннера</th>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td class="compare__self" data-v="yes">да, до первого кадра</td>
-              </tr>
-              <tr>
-                <th scope="row">Секреты шифруются ключом ОС</th>
-                <td data-v="part">частично</td>
-                <td data-v="part">частично</td>
-                <td data-v="part">частично</td>
-                <td data-v="part">частично</td>
-                <td class="compare__self" data-v="yes">ChaCha20 + DPAPI/Keychain</td>
-              </tr>
-              <tr>
-                <th scope="row">Расширения MV2 без магазина</th>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="no">нет</td>
-                <td data-v="part">частично</td>
-                <td class="compare__self" data-v="yes">да, распакованные пакеты</td>
-              </tr>
-              <tr>
-                <th scope="row">Облачный аккаунт обязателен</th>
-                <td data-v="no">для синхронизации</td>
-                <td data-v="no">для синхронизации</td>
-                <td data-v="yes">нет</td>
-                <td data-v="yes">нет</td>
-                <td class="compare__self" data-v="yes">нет</td>
-              </tr>
+              <tr><th>Изоляция сессий по пространствам</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td class="self" data-v="yes">свой контекст и профиль</td></tr>
+              <tr><th>Режим без следов на диске</th><td data-v="no">нет</td><td data-v="part">частично</td><td data-v="yes">да</td><td data-v="part">частично</td><td class="self" data-v="yes">«Призрак» в памяти</td></tr>
+              <tr><th>Блокировка трекеров на сетевом уровне</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">частично</td><td data-v="yes">да</td><td class="self" data-v="yes">да, плюс косметика</td></tr>
+              <tr><th>Согласие cookies без окна баннера</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td class="self" data-v="yes">до первого кадра</td></tr>
+              <tr><th>Секреты под ключом ОС</th><td data-v="part">частично</td><td data-v="part">частично</td><td data-v="part">частично</td><td data-v="part">частично</td><td class="self" data-v="yes">ChaCha20 + DPAPI/Keychain</td></tr>
+              <tr><th>Расширения MV2 без магазина</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">частично</td><td class="self" data-v="yes">распакованные пакеты</td></tr>
+              <tr><th>Облачный аккаунт обязателен</th><td data-v="no">для синхронизации</td><td data-v="no">для синхронизации</td><td data-v="yes">нет</td><td data-v="yes">нет</td><td class="self" data-v="yes">нет</td></tr>
             </tbody>
           </table>
-          <p class="fine">
-            По строкам «Chrome / Инкогнито / Tor / Brave» — публичные документации соответствующих
-            браузеров; по SHELTER — README и <span class="mono">docs/sync-design.md</span> репозитория.
-            «Частично» означает, что свойство есть, но ограничено профилем, режимом или платформой.
-          </p>
         </div>
+        <p class="note">
+          По строкам Chrome, Инкогнито, Tor и Brave — публичные документации этих браузеров;
+          по SHELTER — README и docs/sync-design.md репозитория. «Частично» значит: свойство есть,
+          но ограничено профилем, режимом или платформой.
+        </p>
       </div>
     </section>
 
-    <!-- ================= ПРИНЦИПЫ (жертвы) ================= -->
-    <section id="principles" class="strip">
-      <div class="wrap wrap--split">
+    <!-- Утверждение 6: отказы -->
+    <section id="principles">
+      <div class="wrap wrap--2">
         <div>
-          <p class="eyebrow reveal">Принципы</p>
-          <h2 class="section__title reveal">Что мы сознательно не делаем</h2>
-          <p class="section__lead reveal">
-            Позиция держится не только функциями, но и отказами. Каждый пункт ниже —
-            это возможность, от которой SHELTER отказался намеренно.
-          </p>
+          <h2>Что мы не делаем сознательно</h2>
+          <p class="lead">Позиция держится отказами не меньше, чем функциями.</p>
         </div>
-        <div>
-          <ul class="ticks reveal">
-            <li>Нет телеметрии и витрин данных: ошибки логируются категорией операции и случайным корреляционным ID, без URL и тел запросов.</li>
-            <li>Нет облака по умолчанию: доски живут локально и шифруются; синхронизация — только с вашим ключом.</li>
-            <li>Нет автоустановки обновлений: клиент получает уведомление и ссылку на страницу релиза, решение принимает человек.</li>
-            <li>Нет аккаунта для браузера: вход не нужен ни для вкладок, ни для защит, ни для расширений.</li>
-            <li>Нет доверия клиенту в оплате: подписку проверяет сервер, локальные поля «premium» ничего не решают.</li>
-          </ul>
-        </div>
+        <ul class="no">
+          <li>Телеметрии: ошибки логируются категорией операции и случайным ID, без URL и тел запросов.</li>
+          <li>Облака по умолчанию: доски локальны и зашифрованы, синхронизация — только с вашим ключом.</li>
+          <li>Автоустановки обновлений: клиент получает уведомление и ссылку на релиз, решает человек.</li>
+          <li>Аккаунта для браузера: вход не нужен ни вкладкам, ни защитам, ни расширениям.</li>
+          <li>Доверия клиенту в оплате: подписку проверяет сервер, локальные поля «premium» ничего не решают.</li>
+        </ul>
       </div>
     </section>
 
-    <!-- ================= PREMIUM ================= -->
-    <section id="premium">
+    <!-- Утверждение 7: premium проверяет сервер -->
+    <section id="premium" class="field">
       <div class="wrap">
-        <p class="eyebrow reveal">SHELTER Premium</p>
-        <h2 class="section__title reveal">Подписка проверяется сервером. Точка.</h2>
-        <p class="section__lead reveal">
-          Никаких «ключей в localStorage» и офлайн-взлома: статус доступа сервер отдаёт только
-          после собственной проверки оплаты. Ошибка сервера или сети означает «не premium» —
-          никогда наоборот.
+        <h2>Подписку проверяет сервер, а не файл на диске</h2>
+        <p class="lead">
+          Статус доступа сервер отдаёт после собственной проверки оплаты. Ошибка сервера или сети
+          означает «не premium» — никогда наоборот.
         </p>
         <div class="plans" id="plans"></div>
-        <p class="fine reveal">
-          Оформить и управлять подпиской — в <a href="/account">личном кабинете</a>;
-          администрация сервиса — в <a href="/manage">панели управления</a>.
-        </p>
+        <p class="note">Управление подпиской — в <a href="/account">кабинете пользователя</a>.</p>
       </div>
     </section>
 
-    <!-- ================= ОБНОВЛЕНИЯ ================= -->
-    <section id="updates" class="strip">
-      <div class="wrap wrap--split">
+    <!-- Утверждение 8: обновления из первого источника -->
+    <section id="updates">
+      <div class="wrap wrap--2">
         <div>
-          <p class="eyebrow reveal">Канал обновлений</p>
-          <h2 class="section__title reveal">Релизы из первого источника</h2>
-          <p class="section__lead reveal">
-            Обновления приходят из GitHub Releases репозитория SHELTER: сервер кэширует релизы,
-            клиент спрашивает версию и получает ответ с <span class="mono">autoInstall: false</span>.
-            Никаких тихих установок — только уведомление и ссылка.
+          <h2>Обновления приходят из GitHub Releases</h2>
+          <p class="lead">
+            Сервер кэширует релизы, клиент спрашивает версию и получает ответ
+            с <code>autoInstall: false</code>. Тихих установок нет.
           </p>
-          <ul class="ticks reveal">
-            <li>Каналы <span class="mono">stable</span> и <span class="mono">beta</span>; черновики не публикуются.</li>
-            <li>Принимаются только числовые версии <span class="mono">X.Y.Z</span> / <span class="mono">vX.Y.Z</span>.</li>
-            <li>Рядом с установщиками публикуется <span class="mono">SHA256SUMS.txt</span>.</li>
+          <ul class="no">
+            <li>Каналы stable и beta; черновики клиентам не публикуются.</li>
+            <li>Принимаются только числовые версии X.Y.Z и vX.Y.Z.</li>
+            <li>Рядом с установщиками лежит SHA256SUMS.txt.</li>
           </ul>
         </div>
-        <div class="release-card reveal">
-          <div class="release-card__head">
-            <div>
-              <span class="pill" id="release-channel">stable</span>
-              <span class="mono" id="release-version">v—</span>
-            </div>
-            <span class="mono" id="hero-version"><span class="mono">—</span></span>
+        <div class="rel">
+          <div class="rel__head">
+            <span id="release-channel">stable</span>
+            <span id="release-version">v—</span>
           </div>
           <h3 id="release-name">Последний релиз</h3>
-          <p class="release-card__notes" id="release-notes">
-            Список релизов пока пуст. Как только в GitHub Releases появится публикация
-            с числовым тегом, она отобразится здесь и станет доступна клиентам.
+          <p id="release-notes">
+            Список релизов пока пуст: как только в GitHub Releases появится публикация
+            с числовым тегом, она придёт сюда и в клиенты.
           </p>
-          <div class="release-card__actions">
-            <a class="btn btn--ghost btn--md" id="release-link" href="https://github.com/Everick-Ven/shelter/releases"
+          <div class="rel__act">
+            <a class="lnk" id="release-link" href="https://github.com/Everick-Ven/shelter/releases"
                target="_blank" rel="noopener noreferrer">Страница релизов</a>
-            <span class="fine" id="download-meta">канал stable</span>
+            <span id="download-meta"></span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= СКАЧАТЬ ================= -->
-    <section id="download">
+    <!-- Действие -->
+    <section id="download" class="close">
       <div class="wrap">
-        <div class="download reveal">
-          <div class="download__inner">
-            <h2 class="section__title">Займите своё убежище</h2>
-            <p class="section__lead">
-              Установщики собирает GitHub Actions при пуше тега версии. Windows ставится
-              на пользователя без прав администратора; macOS-образ открывается перетаскиванием
-              в Applications.
-            </p>
-            <div class="download__cta">
-              <a class="btn btn--primary btn--lg" id="download-btn"
-                 href="https://github.com/Everick-Ven/shelter/releases" target="_blank" rel="noopener noreferrer">
-                Скачать последнюю сборку
-              </a>
-              <a class="btn btn--ghost btn--lg"
-                 href="https://github.com/Everick-Ven/shelter/releases" target="_blank" rel="noopener noreferrer">
-                Все платформы и SHA256SUMS
-              </a>
-            </div>
-            <p class="download__meta fine">
-              Windows x64: SHELTER-Setup-x64.exe, portable.zip · macOS Intel: .dmg ·
-              macOS подписан ad-hoc: при первом запуске Gatekeeper может попросить
-              ПКМ → «Открыть».
-            </p>
-          </div>
+        <h2 class="close__name">SHELTER</h2>
+        <p class="lead">
+          Установщики собирает GitHub Actions при пуше тега версии. Windows ставится на пользователя
+          без прав администратора; образ macOS открывается перетаскиванием в Applications.
+        </p>
+        <div class="close__cta">
+          <a class="cta cta--lg" id="download-btn" href="https://github.com/Everick-Ven/shelter/releases"
+             target="_blank" rel="noopener noreferrer">Скачать последнюю сборку</a>
+          <a class="lnk lnk--big" href="https://github.com/Everick-Ven/shelter/releases"
+             target="_blank" rel="noopener noreferrer">Все платформы и контрольные суммы</a>
         </div>
-      </div>
-    </section>
-
-    <!-- ================= FAQ ================= -->
-    <section id="faq" class="strip">
-      <div class="wrap wrap--narrow">
-        <p class="eyebrow reveal">Вопросы</p>
-        <h2 class="section__title reveal">Коротко о главном</h2>
-        <div class="accordion reveal">
-          <details>
-            <summary>Где хранятся мои данные?</summary>
-            <p>
-              Windows: <span class="mono">%LOCALAPPDATA%\SHELTER</span>; macOS:
-              <span class="mono">~/Library/Application Support/SHELTER</span>.
-              Профиль браузера переживает удаление приложения; доски шифруются локальным ключом
-              под защитой DPAPI/Keychain.
-            </p>
-          </details>
-          <details>
-            <summary>Что происходит с вкладкой в «Призраке» после закрытия?</summary>
-            <p>
-              Контекст существовал только в памяти и освобождается сразу: url, stack и title
-              ghost-вкладок не пишутся на диск и не попадают в историю пространств.
-            </p>
-          </details>
-          <details>
-            <summary>Почему macOS-сборка подписана ad-hoc?</summary>
-            <p>
-              Проект пока без Developer ID и нотализации: Gatekeeper предупредит при первом
-              запуске. Это честно написано в инструкции, а не обнаруживается пользователем.
-            </p>
-          </details>
-          <details>
-            <summary>Зачем серверу знать о моей подписке?</summary>
-            <p>
-              Затем, что клиентское «у меня куплено» не является доказательством. Сервер —
-              единственный источник правды: он проверяет оплату у платёжного провайдера и отдаёт
-              статус; при любой ошибке доступ не подтверждается.
-            </p>
-          </details>
-        </div>
+        <p class="note">
+          Windows x64: SHELTER-Setup-x64.exe и portable.zip. macOS Intel: .dmg, подпись ad-hoc —
+          при первом запуске Gatekeeper попросит ПКМ → «Открыть», и это честно написано здесь,
+          а не обнаруживается вами.
+        </p>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="wrap footer__inner">
-      <div class="footer__brand">
-        <img class="nav__icon" src="/assets/img/app-icon.png" width="24" height="24" alt="" />
-        <span>SHELTER</span>
-      </div>
-      <div class="footer__cols">
-        <div>
-          <a href="https://github.com/Everick-Ven/shelter" target="_blank" rel="noopener noreferrer">Репозиторий браузера</a>
-          <a href="https://github.com/Everick-Ven/shelter/releases" target="_blank" rel="noopener noreferrer">Релизы и установщики</a>
-        </div>
-        <div>
-          <a href="/account">Личный кабинет</a>
-          <a href="/manage">Панель управления</a>
-          <a href="/healthz" class="mono" id="footer-env">server</a>
-        </div>
-        <div>
-          <a href="mailto:support@shelter.local" id="footer-support">Поддержка</a>
-        </div>
-      </div>
-      <p class="footer__note">
-        © <span id="year">2026</span> SHELTER. Приватность — это архитектура, а не обещание.
-      </p>
-    </div>
-    <div class="footer__bottom">
-      <div class="wrap">
-        <span class="fine">Chromium 154 · CEF 154.0.32 · Windows x64 · macOS Intel</span>
-      </div>
+  <footer class="foot">
+    <div class="wrap foot__in">
+      <span class="foot__name">SHELTER</span>
+      <nav class="foot__links">
+        <a href="https://github.com/Everick-Ven/shelter" target="_blank" rel="noopener noreferrer">Репозиторий</a>
+        <a href="/account">Кабинет</a>
+        <a href="/manage">Панель администратора</a>
+        <a href="mailto:support@shelter.local" id="footer-support">Поддержка</a>
+        <a href="/healthz" id="footer-env">статус сервера</a>
+      </nav>
+      <p class="foot__note">© <span id="year">2026</span> · приватность это архитектура, а не обещание</p>
     </div>
   </footer>
 

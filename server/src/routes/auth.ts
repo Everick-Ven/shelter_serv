@@ -83,11 +83,12 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const body = z
         .object({
-          email: z.string().max(254),
+          /** Email или короткий логин администратора (по умолчанию `admin`). */
+          email: z.string().min(1).max(254),
           password: z.string().min(1).max(256),
         })
         .safeParse(request.body ?? {});
-      if (!body.success) throw badRequest('invalid_body', 'Нужны email и пароль');
+      if (!body.success) throw badRequest('invalid_body', 'Нужны логин и пароль');
 
       const user = await app.deps.adminAuth.verify(body.data.email, body.data.password);
       const session = await sessions.issue(user, {

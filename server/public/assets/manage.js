@@ -147,10 +147,10 @@
     var demo = cfg && cfg.adminLogin ? cfg.adminLogin.demo : null;
     var demoBox = $('#auth-demo');
     if (demo) {
-      $('#auth-demo-text').textContent = demo.email + '  /  ' + demo.password;
+      $('#auth-demo-text').textContent = demo.login + '  /  ' + demo.password;
       demoBox.hidden = false;
       $('#auth-demo-fill').onclick = function () {
-        $('#login-email').value = demo.email;
+        $('#login-email').value = demo.login;
         $('#login-password').value = demo.password;
         $('#login-password').focus();
       };

@@ -966,7 +966,8 @@ describe('DELETE /api/v1/me — удаление данных и отзыв се
 // ==========================================================================
 describe('админка: вход логином и паролем (без OAuth)', () => {
   const EMAIL = 'admin@shelter.local';
-  const DEMO = 'shelter-demo-admin';
+  const LOGIN = 'admin';
+  const DEMO = '1234567890';
 
   function login(email: string, password: string) {
     return t.app.inject({
@@ -983,8 +984,8 @@ describe('админка: вход логином и паролем (без OAut
     expect(user!.passwordHash).toMatch(/^scrypt\$16384\$/);
   });
 
-  it('демо-доступ работает сразу, без регистрации и OAuth', async () => {
-    const res = await login(EMAIL, DEMO);
+  it('демо-доступ работает сразу: логин admin и пароль 1234567890', async () => {
+    const res = await login(LOGIN, DEMO);
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({ ok: true, user: { email: EMAIL, role: 'admin' } });
     const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME);
@@ -998,13 +999,19 @@ describe('админка: вход логином и паролем (без OAut
     expect(overview.statusCode).toBe(200);
   });
 
-  it('неверный пароль и неизвестный email дают одну и ту же ошибку 401', async () => {
-    const wrong = await login(EMAIL, 'wrong-password');
-    const unknown = await login('ghost@shelter.local', DEMO);
+  it('неверный пароль и неизвестный логин дают одну и ту же ошибку 401', async () => {
+    const wrong = await login(LOGIN, 'wrong-password');
+    const unknown = await login('ghost', DEMO);
     expect(wrong.statusCode).toBe(401);
     expect(unknown.statusCode).toBe(401);
     expect(wrong.json().error.code).toBe('invalid_credentials');
-    expect(unknown.json().error.code).toBe(unknown.json().error.code);
+    expect(unknown.json().error.code).toBe('invalid_credentials');
+  });
+
+  it('email администратора принимается наряду с коротким логином', async () => {
+    const res = await login(EMAIL, DEMO);
+    expect(res.statusCode).toBe(200);
+    expect(res.json().user.role).toBe('admin');
   });
 
   it('пароль не принимается от аккаунта без роли admin (403)', async () => {
@@ -1081,7 +1088,7 @@ describe('админка: вход логином и паролем (без OAut
     });
     try {
       const providers = await prod.app.inject({ method: 'GET', url: '/api/v1/auth/providers' });
-      expect(providers.json().adminLogin.demo).toBeNull();
+    expect(providers.json().adminLogin.demo).toBeNull();
 
       const demo = await prod.app.inject({
         method: 'POST',
@@ -1110,7 +1117,8 @@ describe('админка: вход логином и паролем (без OAut
         PUBLIC_BASE_URL: 'https://shelter.example',
         COOKIE_SECURE: 'true',
         PAYMENT_PROVIDER: 'yookassa',
-        ADMIN_PASSWORD: 'shelter-demo-admin',
+        DEV_LOGIN_ENABLED: 'false',
+        ADMIN_PASSWORD: '1234567890',
       }),
     ).toThrow(/demo password/);
   });

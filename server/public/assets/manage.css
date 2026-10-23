@@ -55,14 +55,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .auth { min-height: 100vh; display: grid; place-items: center; padding: 32px 20px; position: relative; }
 .auth::before {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(50% 40% at 50% 0%, rgba(41,151,255,.22), transparent 70%);
+  background: var(--bg-soft);
   pointer-events: none;
 }
 .auth__card {
   position: relative; width: 100%; max-width: 440px; padding: 40px 36px;
   border: 1px solid var(--border); border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  box-shadow: 0 50px 120px -60px #000;
+  background: var(--bg-panel);
 }
 .auth__home { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 600; letter-spacing: .06em; margin-bottom: 22px; }
 .auth__card h1 { margin: 0 0 10px; font-size: 28px; letter-spacing: -.025em; }
@@ -119,7 +118,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   transition: background .2s var(--ease), color .2s var(--ease);
 }
 .side__link:hover { background: rgba(255,255,255,.05); color: var(--fg); }
-.side__link.is-active { background: rgba(41,151,255,.16); color: #cfe8ff; font-weight: 500; }
+.side__link.is-active { background: rgba(255,255,255,.09); color: var(--fg); font-weight: 500; }
 .side__foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px; display: grid; gap: 10px; }
 .side__user { font-size: 13px; color: var(--fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -128,7 +127,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
   padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
 }
-.topbar h2 { margin: 0; font-size: 26px; letter-spacing: -.025em; }
+.topbar h2 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
 .topbar__sub { margin: 4px 0 0; color: var(--fg-mute); font-size: 13.5px; }
 .topbar__right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
@@ -147,7 +146,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--bg-panel); transition: border-color .3s var(--ease), background .3s var(--ease);
 }
 .card:hover { border-color: var(--border-strong); background: var(--bg-panel-strong); }
-.card__label { color: var(--fg-mute); font-size: 12.5px; text-transform: uppercase; letter-spacing: .08em; }
+.card__label { color: var(--fg-mute); font-size: 13px; }
 .card__value { font-size: 30px; font-weight: 700; letter-spacing: -.03em; margin-top: 8px; line-height: 1.1; }
 .card__meta { color: var(--fg-dim); font-size: 13px; margin-top: 6px; }
 
@@ -254,3 +253,6 @@ tbody tr.is-clickable { cursor: pointer; }
   .grid-2 { grid-template-columns: 1fr; }
   .detail__row { grid-template-columns: 1fr; gap: 2px; }
 }
+
+/* Числовые колонки таблиц: табличные цифры, выравнивание вправо. */
+.table-wrap td.mono:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }

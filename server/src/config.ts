@@ -147,6 +147,14 @@ const envSchema = z.object({
     .union([z.literal(''), z.string().email()])
     .optional()
     .transform((v) => (v ? v.toLowerCase() : 'admin@shelter.local')),
+  /**
+   * Короткий логин администратора (без @): наряду с email принимается
+   * в /manage/api/login. По умолчанию `admin`.
+   */
+  ADMIN_LOGIN: z
+    .union([z.literal(''), z.string().min(2).max(64)])
+    .optional()
+    .transform((v) => (v ? v.toLowerCase() : 'admin')),
   /** Пустая строка из env/compose трактуется как «не задан». */
   ADMIN_PASSWORD: z
     .string()
@@ -188,10 +196,10 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     if (!env.COOKIE_SECURE) problems.push('COOKIE_SECURE must be true in production');
     if (env.DEV_LOGIN_ENABLED) problems.push('DEV_LOGIN_ENABLED must be false in production');
     if (!env.ADMIN_PASSWORD) problems.push('ADMIN_PASSWORD is required in production (no demo password)');
+    else if (env.ADMIN_PASSWORD === '1234567890')
+      problems.push('ADMIN_PASSWORD must not be the demo password in production');
     else if (env.ADMIN_PASSWORD.length < 12)
       problems.push('ADMIN_PASSWORD must be at least 12 chars in production');
-    else if (env.ADMIN_PASSWORD === 'shelter-demo-admin')
-      problems.push('ADMIN_PASSWORD must not be the demo password in production');
     if (env.PAYMENT_PROVIDER === 'mock')
       problems.push('PAYMENT_PROVIDER=mock is not allowed in production');
     if (env.GOOGLE_ENABLED && (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET))

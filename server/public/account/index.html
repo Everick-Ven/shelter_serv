@@ -3,80 +3,115 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SHELTER — личный кабинет</title>
-    <meta name="robots" content="noindex" />
-    <link rel="stylesheet" href="/assets/manage.css" />
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <title>SHELTER — кабинет пользователя</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="/assets/account.css" />
+    <link rel="icon" href="/assets/img/app-icon.png" type="image/png" />
   </head>
   <body>
-    <!-- ВХОД -->
-    <section class="auth" id="screen-auth" hidden>
-      <div class="auth__card">
-        <a class="auth__home" href="/">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
-            <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>SHELTER</span>
-        </a>
-        <h1>Личный кабинет</h1>
-        <p class="auth__lead">
-          Войдите, чтобы оформить подписку и видеть её статус. Статус Premium всегда
-          проверяется на сервере — локальные данные браузера доказательством не являются.
+    <!-- ВХОД ПОЛЬЗОВАТЕЛЯ -->
+    <section class="gate" id="screen-auth" hidden>
+      <div class="gate__card">
+        <h1>Кабинет пользователя</h1>
+        <p class="gate__lead">
+          Здесь видны ваша подписка, заказы, устройства и данные.
+          Администраторы управляют сервисом в отдельной панели.
         </p>
-        <div class="auth__providers" id="auth-providers"></div>
-        <form class="auth__dev" id="dev-form" hidden>
-          <label for="dev-email">Вход для локальной разработки</label>
-          <div class="auth__dev-row">
+        <div class="gate__providers" id="auth-providers"></div>
+        <form class="gate__dev" id="dev-form" hidden>
+          <label for="dev-email">Email для dev-входа</label>
+          <div class="gate__dev-row">
             <input id="dev-email" type="email" placeholder="you@example.com" autocomplete="username" required />
-            <button class="btn btn--ghost btn--md" type="submit">Войти</button>
+            <button class="ubtn ubtn--quiet" type="submit">Войти</button>
           </div>
-          <p class="auth__hint">Такой вход даёт аккаунт, но не даёт подписку.</p>
+          <p class="gate__hint">Dev-вход доступен только в локальной разработке и не выдаёт подписку.</p>
         </form>
-        <p class="auth__error" id="auth-error" role="alert" hidden></p>
+        <p class="gate__error" id="auth-error" role="alert" hidden></p>
+        <p class="gate__hint"><a href="/manage">Вход для администратора</a></p>
       </div>
     </section>
 
     <!-- КАБИНЕТ -->
-    <div class="app" id="screen-app" hidden>
-      <aside class="side">
-        <a class="side__brand" href="/">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
-          </svg>
-          <span>SHELTER</span>
-          <em>account</em>
-        </a>
-        <nav class="side__nav" id="side-nav">
-          <button class="side__link is-active" data-view="subscription">Подписка</button>
-          <button class="side__link" data-view="orders">История заказов</button>
-          <button class="side__link" data-view="sessions">Устройства</button>
-          <button class="side__link" data-view="profile">Профиль</button>
-        </nav>
-        <div class="side__foot">
-          <div class="side__user" id="side-user">—</div>
-          <button class="btn btn--ghost btn--sm" id="logout">Выйти</button>
+    <div class="cab" id="screen-app" hidden>
+      <header class="cab__top">
+        <div class="cab__brand">
+          <span class="cab__mark" aria-hidden="true">S</span>
+          <span class="cab__name">SHELTER</span>
+          <span class="cab__scope">кабинет пользователя</span>
         </div>
-      </aside>
+        <div class="cab__top-actions">
+          <span class="cab__user" id="top-user">—</span>
+          <a class="ubtn ubtn--quiet" id="admin-link" href="/manage" hidden>Панель администратора</a>
+          <button class="ubtn ubtn--quiet" id="logout" type="button">Выйти</button>
+        </div>
+      </header>
 
-      <main class="content">
-        <header class="topbar">
-          <div>
-            <h2 id="view-title">Подписка</h2>
-            <p class="topbar__sub" id="view-subtitle">Статус SHELTER Premium, проверенный сервером</p>
-          </div>
-          <div class="topbar__right">
-            <span class="pill pill--mute" id="pill-status">проверяем…</span>
-            <a class="btn btn--ghost btn--sm" id="admin-link" href="/manage" hidden>Панель управления</a>
-            <button class="btn btn--ghost btn--sm" id="refresh">Обновить</button>
-          </div>
-        </header>
+      <main class="cab__main">
+        <h1 class="cab__title" id="cab-title">Ваш аккаунт</h1>
+        <p class="cab__sub" id="cab-sub">Подписка, заказы и данные — то, что сервер знает о вас.</p>
 
-        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-        <section class="view" id="view"></section>
+        <!-- Подписка -->
+        <section class="blk" id="sec-subscription" aria-labelledby="h-sub">
+          <div class="blk__head">
+            <h2 id="h-sub">Подписка</h2>
+            <span class="status" id="sub-status">проверяем…</span>
+          </div>
+          <div class="blk__body" id="sub-body">
+            <p class="muted">Загружаем статус с сервера…</p>
+          </div>
+        </section>
+
+        <!-- Заказы -->
+        <section class="blk" id="sec-orders" aria-labelledby="h-orders">
+          <div class="blk__head">
+            <h2 id="h-orders">Заказы</h2>
+            <button class="ubtn ubtn--quiet" id="orders-refresh" type="button">Обновить</button>
+          </div>
+          <div class="blk__body" id="orders-body">
+            <p class="muted">Загружаем…</p>
+          </div>
+        </section>
+
+        <!-- Устройства -->
+        <section class="blk" id="sec-sessions" aria-labelledby="h-sessions">
+          <div class="blk__head">
+            <h2 id="h-sessions">Устройства и сессии</h2>
+            <button class="ubtn ubtn--danger" id="sessions-revoke-all" type="button">Выйти на всех</button>
+          </div>
+          <div class="blk__body" id="sessions-body">
+            <p class="muted">Загружаем…</p>
+          </div>
+        </section>
+
+        <!-- Профиль -->
+        <section class="blk" id="sec-profile" aria-labelledby="h-profile">
+          <div class="blk__head">
+            <h2 id="h-profile">Профиль</h2>
+          </div>
+          <div class="blk__body" id="profile-body">
+            <p class="muted">Загружаем…</p>
+          </div>
+        </section>
+
+        <!-- Данные -->
+        <section class="blk blk--danger" id="sec-data" aria-labelledby="h-data">
+          <div class="blk__head">
+            <h2 id="h-data">Ваши данные</h2>
+          </div>
+          <div class="blk__body">
+            <p class="blk__text">
+              Удаление аккаунта анонимизирует профиль, стирает пароль и отзывы всех сессий;
+              оплаченные заказы остаются в учёте платежей без персональных данных.
+              Действие необратимо.
+            </p>
+            <button class="ubtn ubtn--danger" id="delete-me" type="button">Удалить аккаунт и данные</button>
+          </div>
+        </section>
       </main>
     </div>
 
-    <script src="/assets/account.js" defer></script>
+    <div class="utoast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/assets/account.js"></script>
   </body>
 </html>
