@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import helmet from '@fastify/helmet';
@@ -237,7 +237,11 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
       if (!existsSync(manageIndex)) {
         return reply.code(500).type('text/html; charset=utf-8').send('<h1>Manage panel is not installed</h1>');
       }
-      return reply.type('text/html; charset=utf-8').sendFile('manage/index.html');
+      const html = readFileSync(manageIndex, 'utf8').replace(
+        'id="demo-login" type="button" hidden',
+        `id="demo-login" type="button"${deps.adminAuth.demoLoginEnabled() ? '' : ' hidden'}`,
+      );
+      return reply.header('Cache-Control', 'no-store').type('text/html; charset=utf-8').send(html);
     });
 
     // Личный кабинет пользователя: подписка, оплата, заказы, профиль.

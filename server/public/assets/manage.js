@@ -65,6 +65,7 @@
       method: options.method || 'GET',
       headers: { accept: 'application/json' },
       credentials: 'same-origin',
+      cache: 'no-store',
     };
     if (options.body !== undefined) {
       init.headers['content-type'] = 'application/json';
@@ -146,7 +147,9 @@
     // Кнопка демо-входа без пароля: только вне production.
     var demoBtn = $('#demo-login');
     var demoHint = $('#demo-hint');
-    var demoOn = !!(cfg && cfg.adminLogin && cfg.adminLogin.demoLogin);
+    var demoOn = cfg && cfg.adminLogin
+      ? !!cfg.adminLogin.demoLogin
+      : !demoBtn.hidden;
     demoBtn.hidden = !demoOn;
     demoHint.hidden = !demoOn;
     demoBtn.onclick = async function () {

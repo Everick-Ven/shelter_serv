@@ -1155,3 +1155,14 @@ describe('админка: демо-вход кнопкой и пароль из 
     ).toThrow(/12 chars/);
   });
 });
+
+// Кнопка приходит в HTML, а не зависит от успешного запроса providers.
+describe('экран демо-входа', () => {
+  it('/manage отдаёт видимую кнопку и запрещает кэширование страницы', async () => {
+    const page = await t.app.inject({ method: 'GET', url: '/manage' });
+    expect(page.statusCode).toBe(200);
+    expect(page.body).toContain('id="demo-login" type="button">');
+    expect(page.headers['cache-control']).toBe('no-store');
+    expect(page.body).toContain('/assets/manage.js?v=demo-login-2');
+  });
+});
