@@ -40,6 +40,7 @@
   }
 
   async function api(path, opts) {
+    if (window.shelterLocalPreview) return window.shelterLocalPreview(path, opts);
     var res = await fetch(path, Object.assign({
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       credentials: 'same-origin',

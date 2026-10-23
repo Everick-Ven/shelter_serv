@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SHELTER — панель управления</title>
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="stylesheet" href="/assets/manage.css?v=auto-preview-3" />
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../assets/manage.css?v=auto-preview-3" />
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
     <!-- ЭКРАН ВХОДА -->
     <section class="auth" id="screen-auth" hidden>
       <div class="auth__card">
-        <a class="auth__home" href="/" aria-label="На главную">
+        <a class="auth__home" href="../index.html" aria-label="На главную">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
             <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -58,7 +58,7 @@
         <h1>Доступ запрещён</h1>
         <p class="auth__lead">У этого аккаунта нет роли администратора.</p>
         <div class="auth__actions">
-          <a class="btn btn--ghost btn--md" href="/">На главную</a>
+          <a class="btn btn--ghost btn--md" href="../index.html">На главную</a>
           <button class="btn btn--primary btn--md" id="denied-logout">Выйти</button>
         </div>
       </div>
@@ -67,7 +67,7 @@
     <!-- ПАНЕЛЬ -->
     <div class="app" id="screen-app" hidden>
       <aside class="side">
-        <a class="side__brand" href="/">
+        <a class="side__brand" href="../index.html">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
           </svg>
@@ -116,6 +116,7 @@
       </div>
     </div>
 
-    <script src="/assets/manage.js?v=auto-preview-3" defer></script>
+    <script src="../assets/local-preview.js"></script>
+    <script src="../assets/manage.js?v=auto-preview-3" defer></script>
   </body>
 </html>

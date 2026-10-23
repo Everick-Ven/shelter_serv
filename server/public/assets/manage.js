@@ -60,6 +60,7 @@
   }
 
   async function api(path, opts) {
+    if (window.shelterLocalPreview) return window.shelterLocalPreview(path, opts);
     var options = opts || {};
     var init = {
       method: options.method || 'GET',

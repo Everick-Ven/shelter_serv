@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SHELTER — кабинет пользователя</title>
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="stylesheet" href="/assets/account.css" />
-    <link rel="icon" href="/assets/img/app-icon.png" type="image/png" />
+    <link rel="stylesheet" href="../assets/account.css" />
+    <link rel="icon" href="../assets/img/app-icon.png" type="image/png" />
   </head>
   <body>
     <!-- ВХОД ПОЛЬЗОВАТЕЛЯ -->
@@ -27,7 +27,7 @@
           <p class="gate__hint">Dev-вход доступен только в локальной разработке и не выдаёт подписку.</p>
         </form>
         <p class="gate__error" id="auth-error" role="alert" hidden></p>
-        <p class="gate__hint"><a href="/manage">Вход для администратора</a></p>
+        <p class="gate__hint"><a href="../manage/index.html">Вход для администратора</a></p>
       </div>
     </section>
 
@@ -41,7 +41,7 @@
         </div>
         <div class="cab__top-actions">
           <span class="cab__user" id="top-user">—</span>
-          <a class="ubtn ubtn--quiet" id="admin-link" href="/manage" hidden>Панель администратора</a>
+          <a class="ubtn ubtn--quiet" id="admin-link" href="../manage/index.html" hidden>Панель администратора</a>
           <button class="ubtn ubtn--quiet" id="logout" type="button">Выйти</button>
         </div>
       </header>
@@ -112,6 +112,7 @@
 
     <div class="utoast" id="toast" role="status" aria-live="polite" hidden></div>
 
-    <script src="/assets/account.js?v=auto-preview-3"></script>
+    <script src="../assets/local-preview.js"></script>
+    <script src="../assets/account.js?v=auto-preview-3"></script>
   </body>
 </html>
