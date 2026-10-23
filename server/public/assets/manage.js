@@ -12,6 +12,8 @@
     orders: { status: '', limit: 25, offset: 0, total: 0, items: [] },
     overview: null,
     updates: null,
+    updatesSkipped: [],
+    updatesError: null,
   };
 
   var TITLES = {
@@ -573,6 +575,7 @@
   async function viewUpdates(host) {
     var data = await api('/manage/api/updates');
     state.updates = data;
+    if (data.lastError && data.lastError.error) state.updatesError = data.lastError;
     var releases = data.releases || [];
 
     host.innerHTML =
@@ -594,9 +597,39 @@
           '<span class="pill pill--mute">repo: ' + esc(data.repo) + '</span>' +
           '<span class="pill ' + (data.enabled ? '' : 'pill--warn') + '">updates: ' + esc(data.enabled ? 'on' : 'off') + '</span>' +
         '</div>' +
-        '<p class="panel__hint">Клиент получает только уведомление и ссылку на страницу релиза. ' +
+        '<p class="panel__hint">Принимаются только релизы с числовым тегом <span class="mono">X.Y.Z</span> / ' +
+          '<span class="mono">vX.Y.Z</span>; предрелизы уходят в канал <span class="mono">beta</span>, черновики игнорируются. ' +
+          'Клиент получает только уведомление и ссылку на страницу релиза. ' +
           'Автоустановка запрещена: поле <span class="mono">autoInstall</span> всегда <span class="mono">false</span>. ' +
           'Принимаются только числовые версии <span class="mono">X.Y.Z</span> / <span class="mono">vX.Y.Z</span>.</p></div>' +
+
+      (state.updatesError
+        ? '<div class="panel" style="border-color:rgba(255,69,58,.45)">' +
+            '<div class="panel__head"><h3 class="panel__title">GitHub Releases недоступен</h3>' +
+            '<span class="pill pill--warn">' + esc(state.updatesError.error) +
+              (state.updatesError.status ? ' · HTTP ' + esc(state.updatesError.status) : '') + '</span></div>' +
+            '<p class="panel__hint">Канал обновлений работает по кэшу в БД. Причины: ' +
+            'исчерпан лимит анонимных запросов GitHub (задайте <span class="mono">GITHUB_TOKEN</span>), ' +
+            'нет исходящего доступа, либо прокси подменяет TLS-сертификат ' +
+            '(тогда нужен <span class="mono">NODE_EXTRA_CA_CERTS</span>). ' +
+            'Последняя попытка: <span class="mono">' + esc(state.updatesError.at || '—') + '</span></p></div>'
+        : '') +
+
+      (state.updatesSkipped.length
+        ? '<div class="panel" style="border-color:rgba(255,214,10,.4)">' +
+            '<div class="panel__head"><h3 class="panel__title">Пропущенные релизы</h3>' +
+            '<span class="pill pill--warn">' + state.updatesSkipped.length + '</span></div>' +
+            '<div class="table-wrap"><table><thead><tr><th>Тег</th><th>Причина</th></tr></thead><tbody>' +
+            state.updatesSkipped.map(function (r) {
+              var why = r.reason === 'non_numeric_tag'
+                ? 'не числовая версия — требуется <span class="mono">X.Y.Z</span> или <span class="mono">vX.Y.Z</span>'
+                : r.reason === 'draft' ? 'черновик (draft) — не публикуется клиентам' : 'некорректные данные релиза';
+              return '<tr><td class="mono">' + esc(r.tagName) + '</td><td>' + why + '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<p class="panel__hint">Эти релизы видны в GitHub, но в канал обновлений не попадают. ' +
+            'Чтобы клиент увидел обновление, опубликуйте релиз с числовым тегом (например, ' +
+            '<span class="mono">v0.1.0</span> вместо <span class="mono">v0.1.0-beta.1</span>).</p></div>'
+        : '') +
 
       '<div class="panel"><div class="panel__head"><h3 class="panel__title">Релизы в кэше</h3>' +
         '<span class="pill pill--mute">' + releases.length + '</span></div>' +
@@ -616,7 +649,13 @@
       btn.disabled = true; btn.textContent = 'Загружаем…';
       try {
         var res = await api('/manage/api/updates/refresh', { method: 'POST', body: {} });
-        toast('Загружено релизов: ' + res.fetched, 'ok');
+        state.updatesSkipped = res.skipped || [];
+        state.updatesError = res.error ? { error: res.error, status: res.errorStatus, at: new Date().toISOString() } : null;
+        toast(
+          'Загружено релизов: ' + res.fetched +
+            (state.updatesSkipped.length ? ', пропущено: ' + state.updatesSkipped.length : ''),
+          res.fetched ? 'ok' : 'error'
+        );
         await viewUpdates(host);
       } catch (e) {
         toast(e.message, 'error');

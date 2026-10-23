@@ -16,6 +16,31 @@ export interface GitHubRelease {
   assets?: { name: string; browser_download_url?: string; url?: string; size?: number; content_type?: string }[];
 }
 
+export interface SkippedRelease {
+  tagName: string;
+  reason: 'non_numeric_tag' | 'draft' | 'invalid_payload';
+}
+
+export type RefreshError =
+  | 'network_error'
+  | 'http_error'
+  | 'invalid_payload'
+  | null;
+
+export interface RefreshResult {
+  fetched: number;
+  skipped: SkippedRelease[];
+  releases: ReleaseRow[];
+  /**
+   * Причина, по которой GitHub не отдал данные. Важно отличать «релизов нет»
+   * от «не смогли достучаться»: иначе оператор видит пустой канал и не
+   * понимает, что проблема в сети/лимитах/сертификатах.
+   */
+  error: RefreshError;
+  /** HTTP-статус upstream'а, если ошибка была HTTP-уровня. */
+  errorStatus?: number | null;
+}
+
 export interface UpdateCheckInput {
   currentVersion: string;
   channel?: ReleaseChannel | 'auto';
@@ -56,6 +81,12 @@ export interface UpdateCheckResult {
 export class UpdatesService {
   private cache: { at: number; channel: ReleaseChannel; release: ReleaseRow | null } | null = null;
   private fetchImpl: typeof fetch;
+  private refreshError: { error: RefreshError; status: number | null; at: string } | null = null;
+
+  /** Последняя ошибка обращения к GitHub Releases (для диагностики в /manage). */
+  get lastError(): { error: RefreshError; status: number | null; at: string } | null {
+    return this.refreshError;
+  }
 
   constructor(
     private readonly store: Store,
@@ -92,8 +123,14 @@ export class UpdatesService {
     return version ? parseVersion(version)!.canonical : null;
   }
 
-  /** Загрузка релизов из GitHub Releases и обновление кэша в БД. */
-  async refreshFromGitHub(limit = 15): Promise<{ fetched: number; releases: ReleaseRow[] }> {
+  /**
+   * Загрузка релизов из GitHub Releases и обновление кэша в БД.
+   *
+   * Возвращает и список ПРОПУЩЕННЫХ релизов с причиной: оператору в /manage
+   * должно быть видно, почему канал пуст (например, тег `v0.1.0-beta.1` не
+   * является числовой версией X.Y.Z и по ТЗ отбрасывается).
+   */
+  async refreshFromGitHub(limit = 15): Promise<RefreshResult> {
     const url = `${GITHUB_API}/repos/${this.env.GITHUB_REPO}/releases?per_page=${limit}`;
     const headers: Record<string, string> = {
       accept: 'application/vnd.github+json',
@@ -102,29 +139,54 @@ export class UpdatesService {
     };
     if (this.env.GITHUB_TOKEN) headers.authorization = `Bearer ${this.env.GITHUB_TOKEN}`;
 
+    const cached = async () => this.store.releasesList({ limit });
+
     let res: Response;
     try {
       res = await this.fetchImpl(url, { headers });
     } catch {
-      return { fetched: 0, releases: await this.store.releasesList({ limit }) };
+      // Недоступность сети/TLS/прокси: отдаём кэш, но сообщаем причину.
+      this.noteError('network_error', null);
+      return { fetched: 0, skipped: [], releases: await cached(), error: 'network_error', errorStatus: null };
     }
     if (!res.ok) {
-      return { fetched: 0, releases: await this.store.releasesList({ limit }) };
+      this.noteError('http_error', res.status);
+      return {
+        fetched: 0,
+        skipped: [],
+        releases: await cached(),
+        error: 'http_error',
+        errorStatus: res.status,
+      };
     }
 
     let payload: GitHubRelease[];
     try {
       payload = (await res.json()) as GitHubRelease[];
     } catch {
-      return { fetched: 0, releases: await this.store.releasesList({ limit }) };
+      this.noteError('invalid_payload', res.status);
+      return { fetched: 0, skipped: [], releases: await cached(), error: 'invalid_payload', errorStatus: res.status };
     }
-    if (!Array.isArray(payload)) return { fetched: 0, releases: await this.store.releasesList({ limit }) };
+    if (!Array.isArray(payload)) {
+      this.noteError('invalid_payload', res.status);
+      return { fetched: 0, skipped: [], releases: await cached(), error: 'invalid_payload', errorStatus: res.status };
+    }
 
     let fetched = 0;
+    const skipped: SkippedRelease[] = [];
     for (const r of payload) {
-      const parsed = parseVersion(r?.tag_name);
-      if (!parsed) continue; // только числовые версии
-      if (r.draft) continue;
+      const tag = String(r?.tag_name ?? '');
+      const parsed = parseVersion(tag);
+      // Только числовые версии X.Y.Z / vX.Y.Z (ТЗ). Всё остальное — в отчёт.
+      if (!parsed) {
+        if (tag) skipped.push({ tagName: tag, reason: 'non_numeric_tag' });
+        else skipped.push({ tagName: '(без тега)', reason: 'invalid_payload' });
+        continue;
+      }
+      if (r.draft) {
+        skipped.push({ tagName: tag, reason: 'draft' });
+        continue;
+      }
       const channel: ReleaseChannel = r.prerelease ? 'beta' : 'stable';
       await this.store.releaseUpsert({
         id: String(r.id),
@@ -147,7 +209,12 @@ export class UpdatesService {
       fetched++;
     }
     this.cache = null;
-    return { fetched, releases: await this.store.releasesList({ limit }) };
+    this.refreshError = null;
+    return { fetched, skipped, releases: await this.store.releasesList({ limit }), error: null, errorStatus: null };
+  }
+
+  private noteError(error: RefreshError, status: number | null): void {
+    this.refreshError = { error, status, at: new Date().toISOString() };
   }
 
   /** Последний релиз канала: кэш в памяти -> БД -> (опционально) GitHub. */

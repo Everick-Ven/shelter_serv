@@ -24,7 +24,36 @@ import type { FastifyInstance } from 'fastify';
 import type { Env } from '../../src/config.js';
 
 const DATABASE_URL = process.env.DATABASE_URL ?? '';
-const describeOrSkip = DATABASE_URL ? describe : describe.skip;
+
+/**
+ * Реальная проверка доступности PostgreSQL (а не только наличия переменной):
+ * локальный `.env` может задавать DATABASE_URL, которого в окружении нет.
+ * Недоступна — пропускаем весь файл, чтобы не давать ложно-красный прогон.
+ */
+async function isPgReachable(url: string, timeoutMs = 3000): Promise<boolean> {
+  if (!url) return false;
+  const client = new pg.Client({ connectionString: url, connectionTimeoutMillis: timeoutMs });
+  try {
+    await client.connect();
+    await client.query('SELECT 1');
+    return true;
+  } catch {
+    return false;
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
+const PG_AVAILABLE = await isPgReachable(DATABASE_URL);
+const describeOrSkip = PG_AVAILABLE ? describe : describe.skip;
+
+if (!PG_AVAILABLE) {
+  console.log(
+    DATABASE_URL
+      ? '[integration] PostgreSQL недоступен по DATABASE_URL — тесты пропущены'
+      : '[integration] DATABASE_URL не задан — тесты пропущены',
+  );
+}
 
 describeOrSkip('PostgreSQL integration', () => {
   let store: PgStore;

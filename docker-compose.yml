@@ -96,6 +96,8 @@ services:
       UPDATES_ENABLED: ${UPDATES_ENABLED:-true}
       GITHUB_REPO: ${GITHUB_REPO:-Everick-Ven/shelter}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      # Для исходящего трафика через прокси с подменой сертификата
+      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-}
       UPDATES_CHANNEL: ${UPDATES_CHANNEL:-stable}
       UPDATES_MIN_CLIENT_VERSION: ${UPDATES_MIN_CLIENT_VERSION:-}
 

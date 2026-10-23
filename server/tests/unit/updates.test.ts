@@ -91,6 +91,41 @@ describe('загрузка релизов из GitHub Releases', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  it('сообщает причины пропуска: нечисловой тег и черновик', async () => {
+    const result = await service().refreshFromGitHub();
+    expect(result.skipped).toEqual([
+      { tagName: 'v1.3.0-beta.1', reason: 'non_numeric_tag' },
+      { tagName: 'v1.9.0', reason: 'draft' },
+    ]);
+  });
+
+  it('реальный кейс: единственный релиз v0.1.0-beta.1 => канал пуст, причина видна', async () => {
+    const realWorld = new UpdatesService(store, env, (async () =>
+      githubResponse([
+        {
+          id: 401371891,
+          tag_name: 'v0.1.0-beta.1',
+          name: 'SHELTER 0.1.0 beta 1',
+          html_url: 'https://github.com/Everick-Ven/shelter/releases/tag/v0.1.0-beta.1',
+          published_at: '2026-10-01T21:31:46Z',
+          prerelease: true,
+          draft: false,
+          assets: [{ name: 'shelter-setup.exe', browser_download_url: 'https://example.com/a', size: 10 }],
+        },
+      ])) as unknown as typeof fetch);
+
+    const result = await realWorld.refreshFromGitHub();
+    expect(result.fetched).toBe(0);
+    expect(result.skipped).toEqual([{ tagName: 'v0.1.0-beta.1', reason: 'non_numeric_tag' }]);
+    expect(await store.releasesList({ limit: 10 })).toEqual([]);
+
+    // Клиенту ничего не предлагается — и это корректное fail-safe поведение.
+    const check = await realWorld.check({ currentVersion: '0.0.9' });
+    expect(check.updateAvailable).toBe(false);
+    expect(check.release).toBeNull();
+    expect(check.autoInstall).toBe(false);
+  });
+
   it('нормализует vX.Y.Z до X.Y.Z', async () => {
     await service().refreshFromGitHub();
     const stable = await store.releasesList({ channel: 'stable', limit: 5 });
@@ -105,21 +140,47 @@ describe('загрузка релизов из GitHub Releases', () => {
     expect(beta.map((r) => r.version)).toEqual(['1.2.5']);
   });
 
-  it('сбой сети не ломает сервис: отдаётся то, что есть в кэше', async () => {
+  it('сбой сети не ломает сервис: отдаётся кэш и сообщается причина', async () => {
     await service().refreshFromGitHub();
     const failing = new UpdatesService(store, env, (async () => {
       throw new Error('network down');
     }) as unknown as typeof fetch);
     const result = await failing.refreshFromGitHub();
     expect(result.fetched).toBe(0);
+    expect(result.error).toBe('network_error');
     expect(result.releases.length).toBeGreaterThan(0);
+    // Ошибка видна оператору в панели
+    expect(failing.lastError?.error).toBe('network_error');
   });
 
-  it('HTTP-ошибка GitHub тоже обрабатывается gracefully', async () => {
+  it('HTTP-ошибка GitHub: причина и статус доступны, исключения нет', async () => {
     const failing = new UpdatesService(store, env, (async () =>
       githubResponse({ message: 'rate limited' }, { ok: false, status: 403 })) as unknown as typeof fetch);
     const result = await failing.refreshFromGitHub();
     expect(result.fetched).toBe(0);
+    expect(result.error).toBe('http_error');
+    expect(result.errorStatus).toBe(403);
+    expect(failing.lastError).toMatchObject({ error: 'http_error', status: 403 });
+  });
+
+  it('нечитаемый ответ GitHub помечается как invalid_payload', async () => {
+    const broken = new UpdatesService(store, env, (async () =>
+      new Response('<html>not json</html>', { status: 200 })) as unknown as typeof fetch);
+    const result = await broken.refreshFromGitHub();
+    expect(result.error).toBe('invalid_payload');
+    expect(result.fetched).toBe(0);
+  });
+
+  it('успешная загрузка сбрасывает предыдущую ошибку', async () => {
+    const failing = new UpdatesService(store, env, (async () =>
+      githubResponse({}, { ok: false, status: 500 })) as unknown as typeof fetch);
+    await failing.refreshFromGitHub();
+    expect(failing.lastError?.error).toBe('http_error');
+
+    const ok = service();
+    const result = await ok.refreshFromGitHub();
+    expect(result.error).toBeNull();
+    expect(ok.lastError).toBeNull();
   });
 });
 

@@ -304,7 +304,30 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 добавляют только совместимые объекты. Для отката схемы пишите отдельную миграцию
 вперёд (forward-only), как принято для боевых БД.
 
-### 6.3. Что нужно настроить во внешних системах
+### 6.3. Диагностика канала обновлений
+
+`/manage` → «Обновления» показывает не только кэш релизов, но и **почему канал
+пуст**, если данных нет:
+
+| Что видно | Причина | Что делать |
+| --- | --- | --- |
+| `GitHub Releases недоступен · network_error` | нет исходящего доступа / DNS / TLS | проверить egress; за прокси с подменой сертификата — задать `NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt` |
+| `… · http_error 403/429` | исчерпан лимит анонимных запросов GitHub (60/час на IP) | задать `GITHUB_TOKEN` |
+| `… · invalid_payload` | GitHub ответил не JSON (прокси-заглушка, страница ошибки) | смотреть, что реально приходит на `api.github.com` |
+| «Пропущенные релизы» → `non_numeric_tag` | тег не является числовой версией (например `v0.1.0-beta.1`) | по ТЗ принимаются только `X.Y.Z` / `vX.Y.Z`: публикуйте релиз с тегом `v0.1.0` |
+| «Пропущенные релизы» → `draft` | черновик | опубликовать релиз |
+
+Проверка руками:
+
+```bash
+curl -sS https://api.github.com/repos/Everick-Ven/shelter/releases?per_page=5 \
+  | grep -E '"tag_name"|"draft"|"prerelease"'
+```
+
+Клиенту при недоступности GitHub ничего не предлагается: `updateAvailable: false`
+(fail-safe — мы не подталкиваем к установке неизвестной версии).
+
+### 6.4. Что нужно настроить во внешних системах
 
 - **Google Cloud**: OAuth-клиент, redirect `https://<домен>/api/v1/auth/google/callback`.
 - **Yandex OAuth**: приложение, redirect `https://<домен>/api/v1/auth/yandex/callback`.

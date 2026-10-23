@@ -90,6 +90,8 @@ export async function updatesRoutes(app: FastifyInstance): Promise<void> {
     return {
       enabled: env.UPDATES_ENABLED,
       repo: env.GITHUB_REPO,
+      /** Последняя известная ошибка загрузки (сбрасывается успешным refresh). */
+      lastError: updates.lastError,
       channel,
       minSupportedVersion,
       cacheTtlSeconds: env.UPDATES_CACHE_TTL_SECONDS,
@@ -111,8 +113,28 @@ export async function updatesRoutes(app: FastifyInstance): Promise<void> {
   app.post<{ Body: unknown }>('/manage/api/updates/refresh', { preHandler: [requireAdmin] }, async (request) => {
     if (!env.UPDATES_ENABLED) throw forbidden('updates_disabled', 'Update channel is disabled');
     const result = await updates.refreshFromGitHub();
-    await store.eventInsert('updates.refreshed', request.currentUser!.id, { fetched: result.fetched });
-    return { ok: true, fetched: result.fetched, cached: result.releases.length };
+    await store.eventInsert('updates.refreshed', request.currentUser!.id, {
+      fetched: result.fetched,
+      skipped: result.skipped.length,
+    });
+    if (result.skipped.length) {
+      request.log.warn({ skipped: result.skipped }, 'releases skipped by the update channel');
+    }
+    if (result.error) {
+      request.log.error(
+        { error: result.error, status: result.errorStatus ?? null, repo: env.GITHUB_REPO },
+        'GitHub Releases is not reachable',
+      );
+    }
+    return {
+      ok: !result.error,
+      fetched: result.fetched,
+      cached: result.releases.length,
+      skipped: result.skipped,
+      error: result.error,
+      errorStatus: result.errorStatus ?? null,
+      repo: env.GITHUB_REPO,
+    };
   });
 
   app.patch<{ Body: unknown }>('/manage/api/updates', { preHandler: [requireAdmin] }, async (request) => {
