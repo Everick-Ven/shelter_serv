@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SHELTER — панель управления</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="/assets/manage.css" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <!-- ЭКРАН ВХОДА -->
+    <section class="auth" id="screen-auth" hidden>
+      <div class="auth__card">
+        <a class="auth__home" href="/" aria-label="На главную">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+            <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>SHELTER</span>
+        </a>
+        <h1>Панель управления</h1>
+        <p class="auth__lead">
+          Доступ только для администраторов. Вход через OAuth — пароли не хранятся и не передаются.
+        </p>
+        <div class="auth__providers" id="auth-providers"></div>
+        <form class="auth__dev" id="dev-form" hidden>
+          <label for="dev-email">Dev-вход (только локальная разработка)</label>
+          <div class="auth__dev-row">
+            <input id="dev-email" type="email" placeholder="admin@shelter.local" autocomplete="username" required />
+            <button class="btn btn--ghost btn--md" type="submit">Войти</button>
+          </div>
+          <p class="auth__hint">Dev-аккаунт не даёт подписку и не является оплатой.</p>
+        </form>
+        <p class="auth__error" id="auth-error" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <!-- ЭКРАН «НЕТ ДОСТУПА» -->
+    <section class="auth" id="screen-denied" hidden>
+      <div class="auth__card">
+        <h1>Доступ запрещён</h1>
+        <p class="auth__lead">
+          Ваш аккаунт не имеет роли администратора. Роль выдаётся только на сервере
+          (переменная <span class="mono">ADMIN_BOOTSTRAP_EMAILS</span>).
+        </p>
+        <div class="auth__actions">
+          <a class="btn btn--ghost btn--md" href="/">На главную</a>
+          <button class="btn btn--primary btn--md" id="denied-logout">Выйти</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАНЕЛЬ -->
+    <div class="app" id="screen-app" hidden>
+      <aside class="side">
+        <a class="side__brand" href="/">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+          </svg>
+          <span>SHELTER</span>
+          <em>manage</em>
+        </a>
+        <nav class="side__nav" id="side-nav">
+          <button class="side__link is-active" data-view="overview">Обзор</button>
+          <button class="side__link" data-view="users">Пользователи</button>
+          <button class="side__link" data-view="orders">Заказы</button>
+          <button class="side__link" data-view="updates">Обновления</button>
+          <button class="side__link" data-view="account">Аккаунт</button>
+        </nav>
+        <div class="side__foot">
+          <div class="side__user" id="side-user">—</div>
+          <button class="btn btn--ghost btn--sm" id="logout">Выйти</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h2 id="view-title">Обзор</h2>
+            <p id="view-subtitle" class="topbar__sub">Сводка по аккаунтам, подпискам и платежам</p>
+          </div>
+          <div class="topbar__right">
+            <span class="pill" id="pill-store">store</span>
+            <span class="pill pill--warn" id="pill-payments">payments</span>
+            <button class="btn btn--ghost btn--sm" id="refresh">Обновить</button>
+          </div>
+        </header>
+
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+        <section class="view" id="view"></section>
+      </main>
+    </div>
+
+    <div class="modal" id="modal" hidden>
+      <div class="modal__backdrop" data-close></div>
+      <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <header class="modal__head">
+          <h3 id="modal-title">—</h3>
+          <button class="modal__close" data-close aria-label="Закрыть">×</button>
+        </header>
+        <div class="modal__body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="/assets/manage.js" defer></script>
+  </body>
+</html>

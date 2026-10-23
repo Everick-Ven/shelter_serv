@@ -1,0 +1,87 @@
+# ============================================================================
+# SHELTER — production-профиль
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Отличия от dev-профиля:
+#   * NODE_ENV=production — конфигурация валидируется жёстко: без настоящих
+#     секретов, без https-адреса и с mock-платежами сервис НЕ стартует;
+#   * секреты обязательны: используется синтаксис ${VAR:?...} — compose
+#     упадёт с ошибкой, если переменная не задана (никаких значений по умолчанию);
+#   * TLS терминирует caddy (HTTPS only + HSTS), порт БД наружу не публикуется;
+#   * REQUIRE_HTTPS=true — http-запросы редиректятся на https.
+# ============================================================================
+
+services:
+  postgres:
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+    ports: !override []
+    networks:
+      - internal
+
+  api:
+    restart: always
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required (https://...)}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?ALLOWED_ORIGINS is required}
+      REQUIRE_HTTPS: "true"
+      TRUST_PROXY: "true"
+      COOKIE_SECURE: "true"
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required (openssl rand -hex 32)}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:?PAYMENT_PROVIDER is required (yookassa)}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?PAYMENT_WEBHOOK_SECRET is required}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID:-}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY:-}
+      DEV_LOGIN_ENABLED: "false"
+      GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      YANDEX_ENABLED: ${YANDEX_ENABLED:-false}
+      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
+      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
+      ADMIN_BOOTSTRAP_EMAILS: ${ADMIN_BOOTSTRAP_EMAILS:?ADMIN_BOOTSTRAP_EMAILS is required}
+    ports: !override []
+    networks:
+      - internal
+      - edge
+
+  # HTTPS-терминация: Let's Encrypt или локальный self-signed профиль.
+  proxy:
+    image: caddy:2-alpine
+    restart: always
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS is required (shelter.example.com или :8443)}
+    command:
+      - caddy
+      - reverse-proxy
+      - --from
+      - ${SITE_ADDRESS:?SITE_ADDRESS is required}
+      - --to
+      - api:8080
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    internal: true
+  edge:

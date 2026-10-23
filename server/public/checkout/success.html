@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Оплата — SHELTER</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="/assets/manage.css" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <section class="auth">
+      <div class="auth__card" style="max-width:520px">
+        <a class="auth__home" href="/">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+          </svg>
+          <span>SHELTER</span>
+        </a>
+        <h1 id="title">Проверяем оплату…</h1>
+        <p class="auth__lead" id="lead">
+          Статус подписки всегда подтверждается сервером. Пока сервер не получил уведомление
+          от платёжного провайдера, доступ считается неподтверждённым.
+        </p>
+        <div class="detail" id="details"></div>
+        <div class="auth__actions">
+          <a class="btn btn--ghost btn--md" href="/account">В личный кабинет</a>
+          <button class="btn btn--primary btn--md" id="recheck">Проверить ещё раз</button>
+        </div>
+      </div>
+    </section>
+    <script src="/assets/checkout.js" defer></script>
+  </body>
+</html>

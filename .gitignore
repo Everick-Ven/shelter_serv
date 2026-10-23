@@ -1,0 +1,22 @@
+# dependencies / build
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# secrets — никогда не коммитим
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# tests / coverage
+coverage/
+.nyc_output/
+
+# misc
+.npm/
+.DS_Store
+*.log
+tmp/

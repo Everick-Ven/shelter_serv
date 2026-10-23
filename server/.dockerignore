@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.log
+.git
+.gitignore
+Dockerfile
+.dockerignore
+
+# Тесты в образ не кладём, кроме smoke (запускается внутри контейнера)
+tests/**
+!tests/smoke.mjs
+!tests/smoke.sh

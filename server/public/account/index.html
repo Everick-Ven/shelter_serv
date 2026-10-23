@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SHELTER — личный кабинет</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="/assets/manage.css" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <!-- ВХОД -->
+    <section class="auth" id="screen-auth" hidden>
+      <div class="auth__card">
+        <a class="auth__home" href="/">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+            <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>SHELTER</span>
+        </a>
+        <h1>Личный кабинет</h1>
+        <p class="auth__lead">
+          Войдите, чтобы оформить подписку и видеть её статус. Статус Premium всегда
+          проверяется на сервере — локальные данные браузера доказательством не являются.
+        </p>
+        <div class="auth__providers" id="auth-providers"></div>
+        <form class="auth__dev" id="dev-form" hidden>
+          <label for="dev-email">Вход для локальной разработки</label>
+          <div class="auth__dev-row">
+            <input id="dev-email" type="email" placeholder="you@example.com" autocomplete="username" required />
+            <button class="btn btn--ghost btn--md" type="submit">Войти</button>
+          </div>
+          <p class="auth__hint">Такой вход даёт аккаунт, но не даёт подписку.</p>
+        </form>
+        <p class="auth__error" id="auth-error" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <!-- КАБИНЕТ -->
+    <div class="app" id="screen-app" hidden>
+      <aside class="side">
+        <a class="side__brand" href="/">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+          </svg>
+          <span>SHELTER</span>
+          <em>account</em>
+        </a>
+        <nav class="side__nav" id="side-nav">
+          <button class="side__link is-active" data-view="subscription">Подписка</button>
+          <button class="side__link" data-view="orders">История заказов</button>
+          <button class="side__link" data-view="sessions">Устройства</button>
+          <button class="side__link" data-view="profile">Профиль</button>
+        </nav>
+        <div class="side__foot">
+          <div class="side__user" id="side-user">—</div>
+          <button class="btn btn--ghost btn--sm" id="logout">Выйти</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h2 id="view-title">Подписка</h2>
+            <p class="topbar__sub" id="view-subtitle">Статус SHELTER Premium, проверенный сервером</p>
+          </div>
+          <div class="topbar__right">
+            <span class="pill pill--mute" id="pill-status">проверяем…</span>
+            <a class="btn btn--ghost btn--sm" id="admin-link" href="/manage" hidden>Панель управления</a>
+            <button class="btn btn--ghost btn--sm" id="refresh">Обновить</button>
+          </div>
+        </header>
+
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+        <section class="view" id="view"></section>
+      </main>
+    </div>
+
+    <script src="/assets/account.js" defer></script>
+  </body>
+</html>

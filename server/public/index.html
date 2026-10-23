@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SHELTER — браузер, который защищает ваше внимание</title>
+  <meta name="description" content="SHELTER — приватный браузер на Chromium: блокировка слежки, тихий режим, премиум-подписка и обновления через официальный канал релизов." />
+  <meta name="theme-color" content="#000000" />
+  <meta property="og:title" content="SHELTER — приватный браузер" />
+  <meta property="og:description" content="Приватность по умолчанию. Без компромиссов." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="/assets/site.css" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top" aria-label="SHELTER — на главную">
+        <span class="nav__logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+            <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav__name">SHELTER</span>
+      </a>
+
+      <div class="nav__links">
+        <a href="#privacy">Приватность</a>
+        <a href="#features">Возможности</a>
+        <a href="#premium">Premium</a>
+        <a href="#updates">Обновления</a>
+        <a href="#faq">Вопросы</a>
+      </div>
+
+      <div class="nav__actions">
+        <a class="btn btn--ghost btn--sm" id="nav-account" href="/account">Войти</a>
+        <a class="btn btn--primary btn--sm" href="#download">Скачать</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- HERO -->
+    <header class="hero" id="top">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="wrap hero__inner">
+        <p class="eyebrow reveal">SHELTER Browser</p>
+        <h1 class="hero__title reveal">Приватность.<br /><span class="grad">По умолчанию.</span></h1>
+        <p class="hero__subtitle reveal">
+          Браузер, который не следит за вами. Без «соглашений на 40 страниц»,
+          без скрытой телеметрии и без компромиссов со скоростью.
+        </p>
+        <div class="hero__cta reveal">
+          <a class="btn btn--primary btn--lg" href="#download">Скачать бесплатно</a>
+          <a class="btn btn--ghost btn--lg" href="#premium">Что даёт Premium</a>
+        </div>
+        <p class="hero__note reveal" id="hero-version">
+          Актуальная версия: <span class="mono">—</span>
+        </p>
+      </div>
+
+      <div class="hero__device reveal" aria-hidden="true">
+        <div class="browser">
+          <div class="browser__bar">
+            <span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span>
+            <div class="browser__url">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/><path d="M8.5 10.5V7a3.5 3.5 0 1 1 7 0v3.5"/>
+              </svg>
+              <span>https://shelter.app</span>
+            </div>
+          </div>
+          <div class="browser__body">
+            <div class="browser__shield">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.4">
+                <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/>
+                <path d="m8.8 12.2 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div>
+                <strong>Защищено сегодня</strong>
+                <span>трекеров: 1 248 · рекламных сетей: 96</span>
+              </div>
+            </div>
+            <div class="browser__rows">
+              <span style="--w:72%"></span><span style="--w:54%"></span><span style="--w:88%"></span><span style="--w:41%"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- PRIVACY STRIP -->
+    <section class="strip" id="privacy">
+      <div class="wrap">
+        <h2 class="section__title reveal">Ноль телеметрии. Ноль исключений.</h2>
+        <p class="section__lead reveal">
+          Мы не собираем историю, не строим профили и не продаём данные.
+          Единственное, что сервер знает о вас, — факт подписки.
+        </p>
+        <div class="stats">
+          <div class="stat reveal"><b>0</b><span>трекеров по умолчанию</span></div>
+          <div class="stat reveal"><b>100%</b><span>HTTPS на стороне сервера</span></div>
+          <div class="stat reveal"><b>0</b><span>сторонних SDK в сборке</span></div>
+          <div class="stat reveal"><b>1</b><span>запрос к серверу: проверка подписки</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+      <div class="wrap">
+        <p class="eyebrow reveal">Возможности</p>
+        <h2 class="section__title reveal">Сделано так, как должно быть.</h2>
+
+        <div class="grid grid--3">
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.2-8 9.3-4.7-1.1-8-4.7-8-9.3V6l8-3.5Z" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Щит отслеживания</h3>
+            <p>Блокировка трекеров, фингерпринтинга и рекламных сетей на уровне сети — до загрузки страницы.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2" stroke-linecap="round"/></svg>
+            </div>
+            <h3>Тихий режим</h3>
+            <p>Изолированные контейнеры вкладок: сессия живёт ровно столько, сколько вы решили.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h10M4 17h7" stroke-linecap="round"/></svg>
+            </div>
+            <h3>Чистый интерфейс</h3>
+            <p>Ничего лишнего: ни рекомендаций, ни «новостей», ни навязанных виджетов в новой вкладке.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5Z" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Быстрый движок</h3>
+            <p>Chromium-ядро без надстроек: скорость стокового браузера и предсказуемая совместимость.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg>
+            </div>
+            <h3>Проверка подписки на сервере</h3>
+            <p>Premium проверяется сервером при каждом обращении. Локальные данные клиента доказательством не являются.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12" stroke-linecap="round"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 20h15" stroke-linecap="round"/></svg>
+            </div>
+            <h3>Обновления без самодеятельности</h3>
+            <p>Сервер сообщает о новой версии и даёт ссылку на официальный релиз. Ничего не устанавливается автоматически.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREMIUM -->
+    <section class="premium" id="premium">
+      <div class="wrap">
+        <p class="eyebrow reveal">SHELTER Premium</p>
+        <h2 class="section__title reveal">Один тариф. Честная цена.</h2>
+        <p class="section__lead reveal">
+          Подписка продлевает доступ к расширенным сценариям защиты и поддерживает разработку.
+          Оплата подтверждается сервером — иначе доступ не выдаётся.
+        </p>
+
+        <div class="plans" id="plans">
+          <div class="plans__loading">Загружаем тарифы…</div>
+        </div>
+
+        <p class="fine reveal">
+          Цены указаны в рублях и включают все налоги. Автопродления нет: подписка заканчивается
+          ровно через оплаченный период. Отменить или удалить аккаунт можно в один запрос.
+        </p>
+      </div>
+    </section>
+
+    <!-- UPDATES -->
+    <section class="updates" id="updates">
+      <div class="wrap wrap--split">
+        <div>
+          <p class="eyebrow reveal">Канал обновлений</p>
+          <h2 class="section__title reveal">Обновления —<br />из официального источника.</h2>
+          <p class="section__lead reveal">
+            SHELTER проверяет наличие новой версии на сервере и показывает уведомление
+            со ссылкой на страницу релиза. Установка — всегда ваше решение.
+          </p>
+          <ul class="ticks reveal">
+            <li>Только числовые версии вида <span class="mono">X.Y.Z</span></li>
+            <li>Каналы <span class="mono">stable</span> и <span class="mono">beta</span></li>
+            <li>Никакой автоустановки и «тихих» патчей</li>
+          </ul>
+        </div>
+        <div class="release-card reveal" id="release-card">
+          <div class="release-card__head">
+            <span class="pill" id="release-channel">stable</span>
+            <span class="mono" id="release-version">—</span>
+          </div>
+          <h3 id="release-name">Последний релиз</h3>
+          <p id="release-notes" class="release-card__notes">Информация о релизе появится, как только сервер получит данные из GitHub Releases.</p>
+          <a class="btn btn--ghost" id="release-link" href="#" rel="noopener" target="_blank">Открыть страницу релиза</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD -->
+    <section class="download" id="download">
+      <div class="wrap download__inner">
+        <h2 class="section__title section__title--xl reveal">Попробуйте SHELTER.</h2>
+        <p class="section__lead reveal">Бесплатно. Без аккаунта. Без слежки.</p>
+        <div class="download__cta reveal">
+          <a class="btn btn--primary btn--lg" id="download-btn" href="#updates" rel="noopener">Скачать для Windows</a>
+          <span class="mono download__meta" id="download-meta">версия —</span>
+        </div>
+        <p class="fine reveal">
+          Скачивание ведёт на официальный релиз в GitHub. SHELTER никогда не устанавливает
+          обновления автоматически.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <div class="wrap wrap--narrow">
+        <p class="eyebrow reveal">Вопросы</p>
+        <h2 class="section__title reveal">Коротко о главном.</h2>
+
+        <div class="accordion reveal">
+          <details>
+            <summary>Нужен ли аккаунт, чтобы пользоваться браузером?</summary>
+            <p>Нет. Аккаунт нужен только для Premium-подписки и синхронизации статуса доступа.</p>
+          </details>
+          <details>
+            <summary>Как проверяется подписка?</summary>
+            <p>Клиент спрашивает сервер при каждом запуске. Если сервер не подтвердил доступ — Premium считается неактивным. Данные, сохранённые локально, доказательством оплаты не являются.</p>
+          </details>
+          <details>
+            <summary>Есть ли автопродление?</summary>
+            <p>Нет. Подписка действует ровно оплаченный срок: 30 дней для месячного тарифа и 365 дней для годового.</p>
+          </details>
+          <details>
+            <summary>Как удалить свои данные?</summary>
+            <p>В панели управления или запросом <span class="mono">DELETE /api/v1/me</span>: аккаунт анонимизируется, все сессии отзываются, доступ закрывается.</p>
+          </details>
+          <details>
+            <summary>Откуда браузер берёт обновления?</summary>
+            <p>Из канала релизов на GitHub. Сервер отдаёт номер версии и ссылку на страницу релиза; решение об установке принимаете вы.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <div>
+        <div class="footer__brand">SHELTER</div>
+        <p class="footer__note">Приватный браузер. Серверная проверка подписки. Обновления из официального канала.</p>
+      </div>
+      <div class="footer__cols">
+        <div>
+          <h4>Продукт</h4>
+          <a href="#features">Возможности</a>
+          <a href="#premium">Premium</a>
+          <a href="#download">Скачать</a>
+        </div>
+        <div>
+          <h4>Сервис</h4>
+          <a href="/account">Личный кабинет</a>
+          <a href="/manage">Панель управления</a>
+          <a href="/api/v1/plans">Тарифы (API)</a>
+          <a href="/healthz">Статус</a>
+        </div>
+        <div>
+          <h4>Правовое</h4>
+          <a href="#faq">Удаление данных</a>
+          <a href="#privacy">Приватность</a>
+          <a id="footer-support" href="#">Поддержка</a>
+        </div>
+      </div>
+    </div>
+    <div class="wrap footer__bottom">
+      <span>© <span id="year">2026</span> SHELTER</span>
+      <span class="mono" id="footer-env">server</span>
+    </div>
+  </footer>
+
+  <script src="/assets/site.js" defer></script>
+</body>
+</html>

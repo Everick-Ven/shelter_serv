@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  unit:
+    name: Typecheck + unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run test:unit
+
+  integration:
+    name: Integration tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    needs: unit
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shelter
+          POSTGRES_PASSWORD: shelter
+          POSTGRES_DB: shelter_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shelter -d shelter_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgres://shelter:shelter@localhost:5432/shelter_test
+      NODE_ENV: test
+      SESSION_SECRET: ci-session-secret-0123456789abcdef-xyz
+      PAYMENT_WEBHOOK_SECRET: ci-webhook-secret-0123456789abcdef
+      PAYMENT_PROVIDER: mock
+      DEV_LOGIN_ENABLED: 'true'
+      ADMIN_BOOTSTRAP_EMAILS: admin@shelter.test
+      REQUIRE_HTTPS: 'false'
+      COOKIE_SECURE: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Apply migrations
+        run: npm run migrate
+      - name: Run integration tests
+        run: npm run test:integration
+
+  smoke:
+    name: docker compose up + migrations + smoke
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start stack from zero
+        run: docker compose up -d --build
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:8080/healthz; then
+              echo; echo "api is healthy after ${i}s"; exit 0;
+            fi
+            sleep 1
+          done
+          echo "api did not become healthy" >&2
+          docker compose logs --tail=100
+          exit 1
+
+      - name: Verify migrations were applied
+        run: |
+          docker compose exec -T postgres psql -U shelter -d shelter -c '\dt'
+          docker compose exec -T postgres psql -U shelter -d shelter \
+            -c 'SELECT version FROM schema_migrations ORDER BY version;'
+
+      - name: Run smoke tests inside the container
+        run: docker compose exec -T api sh tests/smoke.sh
+
+      - name: Run smoke tests from the host
+        run: BASE_URL=http://localhost:8080 npm --prefix server run smoke
+
+      - name: Public pages are served
+        run: |
+          for path in / /manage /account /checkout/success /api/v1/plans /healthz; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080${path}")
+            echo "${path} -> ${code}"
+            test "${code}" = "200"
+          done
+
+      - name: Mock payment page is NOT exposed in production profile
+        run: |
+          docker compose logs --tail=50 api
+          echo "проверяем, что production-инварианты не позволяют mock-оплату"
+          grep -q "PAYMENT_PROVIDER=mock is not allowed in production" server/src/config.ts
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail=200

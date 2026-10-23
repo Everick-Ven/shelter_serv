@@ -1,0 +1,120 @@
+# ============================================================================
+# SHELTER — локальный запуск «с нуля»
+#
+#   docker compose up --build
+#
+# Поднимает PostgreSQL, применяет миграции при старте API и отдаёт:
+#   http://localhost:8080/         — витрина браузера
+#   http://localhost:8080/manage   — панель управления
+#   http://localhost:8080/healthz  — health-проба
+#
+# Это DEV-профиль: HTTPS терминируется обратным прокси в бою
+# (см. docker-compose.prod.yml), платёжный провайдер — mock, секреты
+# подставляются из окружения с явно помеченными dev-значениями по умолчанию.
+# В production-профиле старт без настоящих секретов невозможен.
+# ============================================================================
+
+name: shelter
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shelter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shelter}
+      POSTGRES_DB: ${POSTGRES_DB:-shelter}
+      # Локаль и часовой пояс фиксируем, чтобы даты подписок не «плыли»
+      TZ: UTC
+      PGTZ: UTC
+    command:
+      - postgres
+      - -c
+      - log_min_messages=warning
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Только для локальной отладки; в бою порт не публикуется.
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shelter} -d ${POSTGRES_DB:-shelter}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      HOST: 0.0.0.0
+      PORT: 8080
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+
+      # В dev-профиле TLS нет, поэтому принудительный https выключен.
+      # В prod-профиле (docker-compose.prod.yml) REQUIRE_HTTPS=true.
+      REQUIRE_HTTPS: ${REQUIRE_HTTPS:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+
+      DATABASE_URL: postgres://${POSTGRES_USER:-shelter}:${POSTGRES_PASSWORD:-shelter}@postgres:5432/${POSTGRES_DB:-shelter}
+      PG_POOL_MAX: ${PG_POOL_MAX:-10}
+      PG_SSL: "false"
+      RUN_MIGRATIONS_ON_BOOT: "true"
+
+      # DEV-значения по умолчанию. В production-профиле эти переменные
+      # обязательны: без них контейнер не стартует.
+      SESSION_SECRET: ${SESSION_SECRET:-dev-only-insecure-session-secret-change-me}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_NAME: shelter_session
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-2592000}
+
+      GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+
+      YANDEX_ENABLED: ${YANDEX_ENABLED:-false}
+      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
+      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
+      YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI:-}
+
+      DEV_LOGIN_ENABLED: ${DEV_LOGIN_ENABLED:-true}
+
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-dev-only-webhook-signing-key-change-me}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID:-}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY:-}
+
+      UPDATES_ENABLED: ${UPDATES_ENABLED:-true}
+      GITHUB_REPO: ${GITHUB_REPO:-Everick-Ven/shelter}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      UPDATES_CHANNEL: ${UPDATES_CHANNEL:-stable}
+      UPDATES_MIN_CLIENT_VERSION: ${UPDATES_MIN_CLIENT_VERSION:-}
+
+      ADMIN_BOOTSTRAP_EMAILS: ${ADMIN_BOOTSTRAP_EMAILS:-admin@shelter.local}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-support@shelter.local}
+      PUBLIC_DIR: public
+    ports:
+      - "${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:
