@@ -170,6 +170,62 @@ await check('GET /api/v1/config отдаёт публичную конфигур
   assert(res.json?.name === 'SHELTER', `name=${res.json?.name}`);
 });
 
+// ------------------------------------- панель /manage: вход логином и паролем
+// Работает БЕЗ OAuth: сервер сам создаёт админа при старте. Демо-пароль
+// сервер отдаёт только вне production (adminLogin.demo), в бою берём env.
+{
+  const providers = await request('/api/v1/auth/providers');
+  assert(providers.status === 200, `providers status ${providers.status}`);
+  const demo = providers.json?.adminLogin?.demo ?? null;
+  const adminEmail = demo?.email ?? ADMIN_EMAIL;
+  const password = demo?.password ?? process.env.ADMIN_PASSWORD ?? '';
+
+  await check('POST /manage/api/login: неверный пароль отклоняется (401)', async () => {
+    const res = await request('/manage/api/login', {
+      method: 'POST',
+      body: { email: adminEmail, password: 'definitely-wrong-password' },
+    });
+    assert(res.status === 401, `status ${res.status}, body ${res.text.slice(0, 160)}`);
+    assert(res.json?.error?.code === 'invalid_credentials', `code=${res.json?.error?.code}`);
+  });
+
+  if (!password) {
+    await check('production: демо-подсказки нет (adminLogin.demo = null)', async () => {
+      assert(demo === null, 'демо-пароль виден в production!');
+    });
+  } else {
+    let adminCookie = null;
+    await check('POST /manage/api/login: админ входит логином+паролем без OAuth', async () => {
+      const res = await request('/manage/api/login', {
+        method: 'POST',
+        body: { email: adminEmail, password },
+      });
+      assert(res.status === 200, `status ${res.status}, body ${res.text.slice(0, 200)}`);
+      assert(res.json?.user?.role === 'admin', `role=${res.json?.user?.role}`);
+      adminCookie = cookieFrom(res);
+      assert(adminCookie, 'cookie сессии не установлена');
+      return `email=${res.json.user.email}`;
+    });
+
+    if (adminCookie) {
+      await check('GET /manage/api/session и /manage/api/overview после парольного входа', async () => {
+        const session = await request('/manage/api/session', { cookie: adminCookie });
+        assert(session.status === 200 && session.json?.user?.role === 'admin', `session ${session.status}`);
+        const overview = await request('/manage/api/overview', { cookie: adminCookie });
+        assert(overview.status === 200, `overview ${overview.status}`);
+        return `users=${overview.json?.metrics?.usersTotal}`;
+      });
+
+      await check('POST /manage/api/logout отзывает сессию панели', async () => {
+        const out = await request('/manage/api/logout', { method: 'POST', cookie: adminCookie, body: {} });
+        assert(out.status === 200, `logout ${out.status}`);
+        const after = await request('/manage/api/session', { cookie: adminCookie });
+        assert(after.status === 401, `сессия жива после logout: ${after.status}`);
+      });
+    }
+  }
+}
+
 // --------------------------------------------------- сквозной сценарий (dev-вход)
 if (DEV_LOGIN) {
   let cookie = null;

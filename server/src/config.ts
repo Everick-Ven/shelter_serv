@@ -133,6 +133,27 @@ const envSchema = z.object({
   RATE_LIMIT_ADMIN_MAX: int(600),
   RATE_LIMIT_ADMIN_WINDOW: z.string().default('1 minute'),
 
+  // ---- Вход администратора: логин + пароль ----
+  /**
+   * Парольный вход в панель `/manage` — основной способ для оператора.
+   * OAuth остаётся для аккаунтов приложения, а не для админки.
+   *
+   * В development без явного ADMIN_PASSWORD создаётся ДЕМО-доступ
+   * (admin@shelter.local / shelter-demo-admin), чтобы панель можно было
+   * проверить сразу после `docker compose up`. В production демо-пароль
+   * запрещён: ADMIN_PASSWORD обязателен, не короче 12 символов.
+   */
+  ADMIN_EMAIL: z
+    .union([z.literal(''), z.string().email()])
+    .optional()
+    .transform((v) => (v ? v.toLowerCase() : 'admin@shelter.local')),
+  /** Пустая строка из env/compose трактуется как «не задан». */
+  ADMIN_PASSWORD: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim() ? v : undefined))
+    .pipe(z.string().min(8, 'ADMIN_PASSWORD must be at least 8 chars').optional()),
+
   // ---- Прочее ----
   ADMIN_BOOTSTRAP_EMAILS: csv([]),
   SUPPORT_EMAIL: z.string().default('support@shelter.local'),
@@ -166,6 +187,11 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       problems.push('PUBLIC_BASE_URL must be https:// in production');
     if (!env.COOKIE_SECURE) problems.push('COOKIE_SECURE must be true in production');
     if (env.DEV_LOGIN_ENABLED) problems.push('DEV_LOGIN_ENABLED must be false in production');
+    if (!env.ADMIN_PASSWORD) problems.push('ADMIN_PASSWORD is required in production (no demo password)');
+    else if (env.ADMIN_PASSWORD.length < 12)
+      problems.push('ADMIN_PASSWORD must be at least 12 chars in production');
+    else if (env.ADMIN_PASSWORD === 'shelter-demo-admin')
+      problems.push('ADMIN_PASSWORD must not be the demo password in production');
     if (env.PAYMENT_PROVIDER === 'mock')
       problems.push('PAYMENT_PROVIDER=mock is not allowed in production');
     if (env.GOOGLE_ENABLED && (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET))

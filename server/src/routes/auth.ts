@@ -56,7 +56,64 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       startUrl: `/api/v1/auth/${name}/start`,
     })),
     devLogin: env.DEV_LOGIN_ENABLED,
+    /**
+     * Админка входит логином+паролем независимо от OAuth. Демо-подсказка
+     * показывается только вне production (в production она равна null).
+     */
+    adminLogin: {
+      enabled: true,
+      demo: app.deps.adminAuth.demoCredentials(),
+    },
   }));
+
+  /**
+   * Вход в панель `/manage`: логин + пароль. Работает без настроенного OAuth.
+   * Rate limit жёсткий: перебор пароля должен быть дорогим.
+   */
+  app.post<{ Body: unknown }>(
+    '/manage/api/login',
+    {
+      config: {
+        rateLimit: {
+          max: env.RATE_LIMIT_AUTH_MAX,
+          timeWindow: env.RATE_LIMIT_AUTH_WINDOW,
+        },
+      },
+    },
+    async (request, reply) => {
+      const body = z
+        .object({
+          email: z.string().max(254),
+          password: z.string().min(1).max(256),
+        })
+        .safeParse(request.body ?? {});
+      if (!body.success) throw badRequest('invalid_body', 'Нужны email и пароль');
+
+      const user = await app.deps.adminAuth.verify(body.data.email, body.data.password);
+      const session = await sessions.issue(user, {
+        userAgent: request.headers['user-agent'] ?? null,
+        ip: request.ip,
+      });
+      reply.setCookie(env.COOKIE_NAME, session.token, sessions.cookieOptions(session.expiresAt));
+      await store.eventInsert('admin.login', user.id, { method: 'password' });
+      request.log.info({ userId: user.id }, 'admin logged in with password');
+      return { ok: true, user: publicUser(user) };
+    },
+  );
+
+  /** Текущая сессия панели (для bootstrap SPA): 401, если не авторизован. */
+  app.get('/manage/api/session', { preHandler: [authenticate] }, async (request) => {
+    if (request.currentUser!.role !== 'admin') throw forbidden('admin_only', 'Панель доступна только администраторам');
+    return { authenticated: true, user: publicUser(request.currentUser!) };
+  });
+
+  /** Выход из панели: сессия отзывается сервером, cookie стирается. */
+  app.post('/manage/api/logout', { preHandler: [authenticate] }, async (request, reply) => {
+    if (request.currentSessionId) await sessions.revoke(request.currentSessionId);
+    reply.clearCookie(env.COOKIE_NAME, { path: '/' });
+    await store.eventInsert('admin.logout', request.currentUser!.id, null);
+    return { ok: true };
+  });
 
   app.get('/api/v1/auth/session', { preHandler: [authenticate] }, async (request) => ({
     authenticated: true,

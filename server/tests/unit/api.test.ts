@@ -1,7 +1,8 @@
 import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { TestApp } from '../helpers/app.js';
-import { createTestApp, loginAs, oauthLogin, TEST_SECRETS } from '../helpers/app.js';
+import { createTestApp, loginAs, oauthLogin, TEST_SECRETS, testEnv } from '../helpers/app.js';
+import { hashPassword } from '../../src/lib/passwords.js';
 import { PLANS } from '../../src/domain/plans.js';
 
 let t: TestApp;
@@ -106,6 +107,7 @@ describe('инфраструктура и безопасность', () => {
       ALLOWED_ORIGINS: 'https://shelter.test',
       DEV_LOGIN_ENABLED: 'false',
       REQUIRE_HTTPS: 'false',
+      ADMIN_PASSWORD: 'production-admin-password-1',
     });
     try {
       for (const url of ['/checkout/mock', '/checkout/mock.html']) {
@@ -646,7 +648,8 @@ describe('панель /manage/api', () => {
     const res = await t.app.inject({ method: 'GET', url: '/manage/api/overview', headers: { cookie } });
     expect(res.statusCode).toBe(200);
     const body = res.json();
-    expect(body.metrics).toMatchObject({ usersTotal: 1, paidOrderCount: 0, revenueMinor: 0 });
+    // +1 к пользователям: bootstrap-админ (admin@shelter.local) создаётся при старте.
+    expect(body.metrics).toMatchObject({ usersTotal: 2, paidOrderCount: 0, revenueMinor: 0 });
     expect(body.plans.length).toBe(2);
   });
 
@@ -960,3 +963,155 @@ describe('DELETE /api/v1/me — удаление данных и отзыв се
   });
 });
 
+// ==========================================================================
+describe('админка: вход логином и паролем (без OAuth)', () => {
+  const EMAIL = 'admin@shelter.local';
+  const DEMO = 'shelter-demo-admin';
+
+  function login(email: string, password: string) {
+    return t.app.inject({
+      method: 'POST',
+      url: '/manage/api/login',
+      payload: { email, password },
+    });
+  }
+
+  it('bootstrap при старте создаёт админа: роль admin + scrypt-хэш', async () => {
+    const user = await t.store.userByEmail(EMAIL);
+    expect(user).not.toBeNull();
+    expect(user!.role).toBe('admin');
+    expect(user!.passwordHash).toMatch(/^scrypt\$16384\$/);
+  });
+
+  it('демо-доступ работает сразу, без регистрации и OAuth', async () => {
+    const res = await login(EMAIL, DEMO);
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ ok: true, user: { email: EMAIL, role: 'admin' } });
+    const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME);
+    expect(cookie).toBeTruthy();
+
+    const overview = await t.app.inject({
+      method: 'GET',
+      url: '/manage/api/overview',
+      headers: { cookie: `${cookie!.name}=${cookie!.value}` },
+    });
+    expect(overview.statusCode).toBe(200);
+  });
+
+  it('неверный пароль и неизвестный email дают одну и ту же ошибку 401', async () => {
+    const wrong = await login(EMAIL, 'wrong-password');
+    const unknown = await login('ghost@shelter.local', DEMO);
+    expect(wrong.statusCode).toBe(401);
+    expect(unknown.statusCode).toBe(401);
+    expect(wrong.json().error.code).toBe('invalid_credentials');
+    expect(unknown.json().error.code).toBe(unknown.json().error.code);
+  });
+
+  it('пароль не принимается от аккаунта без роли admin (403)', async () => {
+    const { userId } = await loginAs(t, 'plain-user@shelter.local');
+    await t.store.userSetPassword(userId, hashPassword('plain-user-password'));
+    const res = await login('plain-user@shelter.local', 'plain-user-password');
+    expect(res.statusCode).toBe(403);
+    expect(res.json().error.code).toBe('admin_only');
+  });
+
+  it('сессия панели: /manage/api/session и выход через logout', async () => {
+    const res = await login(EMAIL, DEMO);
+    const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME)!;
+    const header = { cookie: `${cookie.name}=${cookie.value}` };
+
+    const session = await t.app.inject({ method: 'GET', url: '/manage/api/session', headers: header });
+    expect(session.statusCode).toBe(200);
+    expect(session.json().user.role).toBe('admin');
+
+    const out = await t.app.inject({ method: 'POST', url: '/manage/api/logout', headers: header, payload: {} });
+    expect(out.statusCode).toBe(200);
+
+    const after = await t.app.inject({ method: 'GET', url: '/manage/api/session', headers: header });
+    expect(after.statusCode).toBe(401);
+  });
+
+  it('перебор пароля упирается в rate limit (429)', async () => {
+    const limited = await createTestApp({ RATE_LIMIT_AUTH_MAX: '3' });
+    try {
+      for (let i = 0; i < 3; i++) {
+        const r = await limited.app.inject({
+          method: 'POST',
+          url: '/manage/api/login',
+          payload: { email: EMAIL, password: 'bad' },
+        });
+        expect(r.statusCode).toBe(401);
+      }
+      const blocked = await limited.app.inject({
+        method: 'POST',
+        url: '/manage/api/login',
+        payload: { email: EMAIL, password: DEMO },
+      });
+      expect(blocked.statusCode).toBe(429);
+    } finally {
+      await limited.close();
+    }
+  });
+
+  it('DELETE /me стирает пароль: вход прежними данными невозможен', async () => {
+    const res = await login(EMAIL, DEMO);
+    const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME)!;
+    const del = await t.app.inject({
+      method: 'DELETE',
+      url: '/api/v1/me',
+      headers: { cookie: `${cookie.name}=${cookie.value}` },
+    });
+    expect(del.statusCode).toBe(200);
+    const again = await login(EMAIL, DEMO);
+    expect(again.statusCode).toBe(401);
+  });
+
+  it('в production демо-подсказки нет, а пароль из env авторитетен', async () => {
+    const prod = await createTestApp({
+      NODE_ENV: 'production',
+      STORE_DRIVER: 'pg',
+      PUBLIC_BASE_URL: 'https://shelter.example',
+      COOKIE_SECURE: 'true',
+      PAYMENT_PROVIDER: 'yookassa',
+      YOOKASSA_SHOP_ID: 'shop-test',
+      YOOKASSA_SECRET_KEY: 'secret-test',
+      DEV_LOGIN_ENABLED: 'false',
+      ADMIN_EMAIL: 'ops@shelter.example',
+      ADMIN_PASSWORD: 'rotated-secret-password-42',
+    });
+    try {
+      const providers = await prod.app.inject({ method: 'GET', url: '/api/v1/auth/providers' });
+      expect(providers.json().adminLogin.demo).toBeNull();
+
+      const demo = await prod.app.inject({
+        method: 'POST',
+        url: '/manage/api/login',
+        payload: { email: 'ops@shelter.example', password: DEMO },
+      });
+      expect(demo.statusCode).toBe(401);
+
+      const good = await prod.app.inject({
+        method: 'POST',
+        url: '/manage/api/login',
+        payload: { email: 'ops@shelter.example', password: 'rotated-secret-password-42' },
+      });
+      expect(good.statusCode).toBe(200);
+      expect(good.json().user.role).toBe('admin');
+    } finally {
+      await prod.close();
+    }
+  });
+
+  it('production не стартует с демо-паролем (fail-closed конфигурация)', async () => {
+    expect(() =>
+      testEnv({
+        NODE_ENV: 'production',
+        STORE_DRIVER: 'pg',
+        PUBLIC_BASE_URL: 'https://shelter.example',
+        COOKIE_SECURE: 'true',
+        PAYMENT_PROVIDER: 'yookassa',
+        ADMIN_PASSWORD: 'shelter-demo-admin',
+      }),
+    ).toThrow(/demo password/);
+  });
+});

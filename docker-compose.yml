@@ -98,6 +98,8 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       # Для исходящего трафика через прокси с подменой сертификата
       NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       UPDATES_CHANNEL: ${UPDATES_CHANNEL:-stable}
       UPDATES_MIN_CLIENT_VERSION: ${UPDATES_MIN_CLIENT_VERSION:-}
 

@@ -151,6 +151,35 @@
     }
   }
 
+  // ------------------------------------------- счётчик заблокированных
+  function initBlockedCounter() {
+    var el = $('#blocked-count');
+    if (!el) return;
+    var target = parseInt(el.getAttribute('data-target') || '0', 10) || 0;
+    var started = false;
+    var run = function () {
+      if (started) return;
+      started = true;
+      var t0 = null;
+      var dur = 1400;
+      var step = function (ts) {
+        if (!t0) t0 = ts;
+        var k = Math.min(1, (ts - t0) / dur);
+        var eased = 1 - Math.pow(1 - k, 3);
+        el.textContent = Math.round(target * eased).toLocaleString('ru-RU');
+        if (k < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    if (!('IntersectionObserver' in window)) { run(); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { run(); io.disconnect(); }
+      });
+    }, { threshold: 0.4 });
+    io.observe(el);
+  }
+
   function escapeHtml(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -160,6 +189,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     initReveal();
     initNav();
+    initBlockedCounter();
     void renderPlans();
     void renderRelease();
     void renderAccount();

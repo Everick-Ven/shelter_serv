@@ -112,7 +112,8 @@ npm run smoke             # smoke против запущенного серве
 | `GOOGLE_CLIENT_ID/SECRET` | вход через Google | при `GOOGLE_ENABLED=true` |
 | `YANDEX_CLIENT_ID/SECRET` | вход через Yandex ID | при `YANDEX_ENABLED=true` |
 | `YOOKASSA_SHOP_ID/SECRET_KEY` | приём платежей | при `PAYMENT_PROVIDER=yookassa` |
-| `ADMIN_BOOTSTRAP_EMAILS` | кто получает роль `admin` при входе | да в production |
+| `ADMIN_BOOTSTRAP_EMAILS` | кто получает роль `admin` при OAuth-входе | да в production |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | вход в панель `/manage` логином+паролем | `ADMIN_PASSWORD` да в production |
 | `GITHUB_REPO`, `GITHUB_TOKEN` | источник релизов для канала обновлений | `GITHUB_TOKEN` опционален |
 
 Production-инварианты (проверяются при старте, нарушение = отказ стартовать):
@@ -121,6 +122,7 @@ Production-инварианты (проверяются при старте, н�
 - `COOKIE_SECURE=true`;
 - `DEV_LOGIN_ENABLED=false`;
 - `PAYMENT_PROVIDER != mock`;
+- `ADMIN_PASSWORD` задан, ≥ 12 символов и не равен демо-паролю;
 - заданы секреты включённых OAuth-провайдеров;
 - `STORE_DRIVER=pg`.
 
@@ -175,6 +177,25 @@ RUN_MIGRATIONS_ON_BOOT=false npm start                      # не примен�
 | GET | `/api/v1/auth/session` | текущая сессия (для SPA) |
 | POST | `/api/v1/auth/logout` | отзыв текущей сессии |
 | POST | `/api/v1/auth/dev-login` | **только dev**: аккаунт без подписки |
+| POST | `/manage/api/login` | вход администратора: email + пароль (работает без OAuth) |
+| GET | `/manage/api/session` | текущая сессия панели (401 без авторизации) |
+| POST | `/manage/api/logout` | отзыв сессии панели |
+
+### 4.1.1. Вход в панель: логин + пароль
+
+Панель `/manage` не зависит от OAuth: сервер при старте создаёт аккаунт
+`ADMIN_EMAIL` с ролью `admin` и ставит ему пароль из `ADMIN_PASSWORD`
+(если переменная не задана вне production — демо-пароль `shelter-demo-admin`,
+подсказка с ним показывается прямо на экране входа; в production сервер с
+демо-паролем не стартует).
+
+- в БД хранится только scrypt-хэш с солью (`scrypt$N$salt$hash`);
+- проверка в constant-time: «нет email» и «неверный пароль» неотличимы (401
+  `invalid_credentials`), аккаунт без роли `admin` получает 403;
+- rate limit на `/manage/api/login` — `RATE_LIMIT_AUTH_MAX` за
+  `RATE_LIMIT_AUTH_WINDOW` (по умолчанию 10 попыток / 10 минут);
+- ротация пароля: поменять `ADMIN_PASSWORD` и перезапустить сервис;
+- `DELETE /api/v1/me` стирает и хэш пароля вместе с остальными данными.
 
 Google: `id_token` проверяется криптографически по JWKS (`jose`: подпись, `iss`,
 `aud`, `exp`). Yandex: `code` → `access_token` → `/info`, токен наружу не отдаётся.
@@ -278,6 +299,7 @@ export PUBLIC_BASE_URL=https://shelter.example.com
 export ALLOWED_ORIGINS=https://shelter.example.com
 export SITE_ADDRESS=shelter.example.com
 export ADMIN_BOOTSTRAP_EMAILS=you@example.com
+export ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='...'   # >= 12 символов, не демо
 export GOOGLE_ENABLED=true GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=...
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -364,7 +386,7 @@ server/
 └── tests/
     ├── unit/            # 159 тестов: домен, сервисы, HTTP-контур (in-memory)
     ├── integration/     # PostgreSQL: миграции, схема, e2e-сценарий (нужен DATABASE_URL)
-    ├── smoke.mjs        # smoke-проверки живого сервера (22 проверки)
+    ├── smoke.mjs        # smoke-проверки живого сервера (26 проверок)
     └── smoke.sh         # обёртка: ждёт /healthz и запускает smoke.mjs
 ```
 

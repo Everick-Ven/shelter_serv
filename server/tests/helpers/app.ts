@@ -7,6 +7,7 @@ import type { Store } from '../../src/db/types.js';
 import { SessionService } from '../../src/services/sessions.js';
 import { SubscriptionService } from '../../src/services/subscriptions.js';
 import { UpdatesService } from '../../src/services/updates.js';
+import { AdminAuthService } from '../../src/services/admins.js';
 import { buildProviders } from '../../src/providers/index.js';
 import { buildApp } from '../../src/app.js';
 import type { AuthProvider } from '../../src/providers/auth/types.js';
@@ -66,6 +67,7 @@ export interface TestApp {
   sessions: SessionService;
   subscriptions: SubscriptionService;
   updates: UpdatesService;
+  adminAuth: AdminAuthService;
   authProviders: Record<string, AuthProvider>;
   payments: PaymentProvider;
   close: () => Promise<void>;
@@ -85,6 +87,7 @@ export async function createTestApp(
   const sessions = new SessionService(store, env);
   const subscriptions = new SubscriptionService(store);
   const updates = new UpdatesService(store, env, providerOverrides.fetchImpl);
+  const adminAuth = new AdminAuthService(store, env);
 
   const app = await buildApp({
     deps: {
@@ -93,6 +96,7 @@ export async function createTestApp(
       sessions,
       subscriptions,
       updates,
+      adminAuth,
       authProviders: providers.authProviders,
       payments: providers.payments,
       publicDir: PUBLIC_DIR,
@@ -108,6 +112,7 @@ export async function createTestApp(
     sessions,
     subscriptions,
     updates,
+    adminAuth,
     authProviders: providers.authProviders,
     payments: providers.payments,
     close: async () => {

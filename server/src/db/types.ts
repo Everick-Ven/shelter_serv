@@ -17,6 +17,11 @@ export interface UserRow {
   name: string | null;
   avatarUrl: string | null;
   role: UserRole;
+  /**
+   * scrypt-хэш пароля входа в панель `/manage`. NULL — парольный вход не
+   * настроен. В API и админ-представления не отдаётся никогда.
+   */
+  passwordHash: string | null;
   /** аккаунт удалён по запросу пользователя (DELETE /me) */
   deletedAt: string | null;
   createdAt: string;
@@ -180,6 +185,8 @@ export interface Store {
   userAnonymize(id: string, at?: Date): Promise<void>;
   usersList(opts: { q?: string; limit?: number; offset?: number }): Promise<{ items: AdminUserRow[]; total: number }>;
   userSetRole(id: string, role: UserRole): Promise<UserRow | null>;
+  /** Установка/сброс (null) scrypt-хэша пароля администратора. */
+  userSetPassword(id: string, hash: string | null): Promise<UserRow | null>;
   adminUserView(id: string): Promise<AdminUserRow | null>;
 
   identityUpsert(input: {

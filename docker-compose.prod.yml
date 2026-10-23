@@ -46,6 +46,9 @@ services:
       YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID:-}
       YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET:-}
       ADMIN_BOOTSTRAP_EMAILS: ${ADMIN_BOOTSTRAP_EMAILS:?ADMIN_BOOTSTRAP_EMAILS is required}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@shelter.local}
+      # Без боевого пароля compose не стартует: демо-доступ в production запрещён.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required (>= 12 chars, not the demo password)}
     ports: !override []
     networks:
       - internal

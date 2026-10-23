@@ -137,33 +137,57 @@
   }
 
   async function renderAuth() {
-    var host = $('#auth-providers');
     var errorEl = $('#auth-error');
     errorEl.hidden = true;
-    host.innerHTML = '<div class="skeleton" style="height:46px"></div>';
 
     var cfg = null;
     try { cfg = await api('/api/v1/auth/providers'); } catch (e) { cfg = null; }
-    var providers = cfg && cfg.providers ? cfg.providers : [];
-    var redirect = encodeURIComponent('/manage');
 
-    if (!providers.length && !(cfg && cfg.devLogin)) {
-      host.innerHTML =
-        '<p class="auth__hint">OAuth-провайдеры не настроены. Задайте GOOGLE_CLIENT_ID / ' +
-        'YANDEX_CLIENT_ID в окружении сервера или включите DEV_LOGIN_ENABLED для локальной разработки.</p>';
+    // Демо-подсказка: только вне production (сервер отдаёт demo = null в бою).
+    var demo = cfg && cfg.adminLogin ? cfg.adminLogin.demo : null;
+    var demoBox = $('#auth-demo');
+    if (demo) {
+      $('#auth-demo-text').textContent = demo.email + '  /  ' + demo.password;
+      demoBox.hidden = false;
+      $('#auth-demo-fill').onclick = function () {
+        $('#login-email').value = demo.email;
+        $('#login-password').value = demo.password;
+        $('#login-password').focus();
+      };
     } else {
-      host.innerHTML = providers.map(function (p) {
-        var icon = p.name === 'google'
-          ? '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4Z"/><path fill="#34A853" d="M12 22c2.7 0 4.9-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14Z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.4L6.4 10c.8-2.4 3-4.1 5.6-4.1Z"/></svg>'
-          : '<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="10" fill="#FC3F1D"/><path fill="#fff" d="M13.6 6.5h-1.9c-1.6 0-2.6.9-2.6 2.2 0 1.5 1 2.1 2.2 2.6l.4.2-2.6 4.9h2l2.2-4.4v4.4h1.7V6.5Zm-1.7 3.4c-.7-.3-1.2-.6-1.2-1.2 0-.5.4-.8 1-.8h.2v2Z"/></svg>';
-        return '<a class="auth__provider" href="' + esc(p.startUrl) + '?redirect=' + redirect + '">' +
-          icon + '<span>Войти через ' + esc(p.label) + '</span></a>';
-      }).join('');
+      demoBox.hidden = true;
     }
 
+    // Основной вход: логин + пароль, без OAuth.
+    $('#login-form').onsubmit = async function (ev) {
+      ev.preventDefault();
+      errorEl.hidden = true;
+      var email = $('#login-email').value.trim();
+      var password = $('#login-password').value;
+      if (!email || !password) {
+        errorEl.textContent = 'Введите email и пароль.';
+        errorEl.hidden = false;
+        return;
+      }
+      try {
+        await api('/manage/api/login', { method: 'POST', body: { email: email, password: password } });
+        await boot();
+      } catch (e) {
+        if (e && e.status === 429) {
+          errorEl.textContent = 'Слишком много попыток входа. Подождите несколько минут.';
+        } else {
+          errorEl.textContent = (e && e.message) || 'Неверный email или пароль';
+        }
+        errorEl.hidden = false;
+        $('#login-password').select();
+      }
+    };
+
+    // Служебный dev-вход аккаунтом приложения (скрыт, если выключен).
     var devForm = $('#dev-form');
+    var devWrap = devForm.closest('.auth__extra');
     if (cfg && cfg.devLogin) {
-      devForm.hidden = false;
+      devWrap.hidden = false;
       devForm.onsubmit = async function (ev) {
         ev.preventDefault();
         errorEl.hidden = true;
@@ -177,7 +201,7 @@
         }
       };
     } else {
-      devForm.hidden = true;
+      devWrap.hidden = true;
     }
   }
 

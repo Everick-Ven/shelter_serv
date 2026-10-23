@@ -110,6 +110,9 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
       'retry-after': true,
     },
     errorResponseBuilder: (request, context) => ({
+      // statusCode обязателен: плагин БРОСАЕТ этот объект, и Fastify берёт
+      // статус из него. Без поля лимит превращался в 500 вместо 429.
+      statusCode: 429,
       error: {
         code: 'rate_limited',
         message: `Too many requests. Retry in ${context.after}`,
@@ -195,6 +198,16 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
         return reply.code(404).send({ error: { code: 'not_found', message: 'Route not found' } });
       }
     });
+  }
+
+  // Аккаунт администратора + пароль должны существовать до первого запроса:
+  // панель `/manage` обязана пускать оператора сразу после старта.
+  const boot = await deps.adminAuth.bootstrap();
+  if (boot.passwordSet) {
+    app.log.info(
+      { email: boot.email, created: boot.created, demo: !env.ADMIN_PASSWORD },
+      'admin account ready (password login enabled)',
+    );
   }
 
   // --- маршруты API ---------------------------------------------------------

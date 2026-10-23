@@ -68,6 +68,7 @@ export class MemoryStore implements Store {
       name: input.name,
       avatarUrl: input.avatarUrl,
       role: input.role ?? 'user',
+      passwordHash: null,
       deletedAt: null,
       createdAt: now,
       updatedAt: now,
@@ -114,6 +115,7 @@ export class MemoryStore implements Store {
     u.email = null;
     u.name = null;
     u.avatarUrl = null;
+    u.passwordHash = null; // пароль — тоже персональные данные
     u.deletedAt = at.toISOString();
     u.updatedAt = at.toISOString();
     for (const [key, identity] of [...this.identities.entries()]) {
@@ -161,6 +163,14 @@ export class MemoryStore implements Store {
     const u = this.users.get(id);
     if (!u) return null;
     u.role = role;
+    u.updatedAt = new Date().toISOString();
+    return { ...u };
+  }
+
+  async userSetPassword(id: string, hash: string | null): Promise<UserRow | null> {
+    const u = this.users.get(id);
+    if (!u) return null;
+    u.passwordHash = hash;
     u.updatedAt = new Date().toISOString();
     return { ...u };
   }

@@ -7,6 +7,7 @@ import type { Store } from './db/types.js';
 import { SessionService } from './services/sessions.js';
 import { SubscriptionService } from './services/subscriptions.js';
 import { UpdatesService } from './services/updates.js';
+import { AdminAuthService } from './services/admins.js';
 import { buildProviders } from './providers/index.js';
 import { buildApp } from './app.js';
 import { runMigrations } from './db/migrate.js';
@@ -51,6 +52,7 @@ async function main(): Promise<void> {
   const sessions = new SessionService(store, env);
   const subscriptions = new SubscriptionService(store);
   const updates = new UpdatesService(store, env);
+  const adminAuth = new AdminAuthService(store, env);
 
   const app = await buildApp({
     deps: {
@@ -59,6 +61,7 @@ async function main(): Promise<void> {
       sessions,
       subscriptions,
       updates,
+      adminAuth,
       authProviders: providers.authProviders,
       payments: providers.payments,
       publicDir: path.resolve(env.PUBLIC_DIR.startsWith('/') ? env.PUBLIC_DIR : path.resolve(process.cwd(), env.PUBLIC_DIR)),

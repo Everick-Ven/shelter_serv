@@ -76,7 +76,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .auth__provider:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.32); }
 .auth__provider svg { flex: none; }
-.auth__dev { margin-top: 26px; border-top: 1px solid var(--border); padding-top: 20px; }
+.auth__form { display: grid; gap: 8px; text-align: left; }
+.auth__label { font-size: 12.5px; color: var(--fg-mute); margin-top: 6px; }
+.auth__submit { margin-top: 14px; justify-content: center; }
+.auth__demo {
+  margin-top: 20px; padding: 14px 16px; border-radius: var(--radius-sm);
+  border: 1px dashed rgba(255,214,10,.45); background: rgba(255,214,10,.06);
+  text-align: left;
+}
+.auth__demo-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.auth__demo-text { margin: 10px 0 0; font-size: 13px; color: var(--fg); word-break: break-all; }
+.auth__extra { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 14px; text-align: left; }
+.auth__extra summary { cursor: pointer; font-size: 12.5px; color: var(--fg-mute); }
+.auth__extra[open] summary { margin-bottom: 12px; }
+.auth__dev { margin-top: 12px; }
 .auth__dev label { display: block; font-size: 12.5px; color: var(--fg-mute); margin-bottom: 8px; }
 .auth__dev-row { display: flex; gap: 8px; }
 .auth__dev input {

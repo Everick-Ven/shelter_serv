@@ -43,6 +43,7 @@ function mapUser(r: any): UserRow {
     name: r.name ?? null,
     avatarUrl: r.avatar_url ?? null,
     role: (r.role as UserRole) ?? 'user',
+    passwordHash: r.password_hash ?? null,
     deletedAt: toIso(r.deleted_at),
     createdAt: toIso(r.created_at)!,
     updatedAt: toIso(r.updated_at)!,
@@ -222,7 +223,8 @@ export class PgStore implements Store {
     try {
       await client.query('BEGIN');
       await client.query(
-        `UPDATE users SET email = NULL, name = NULL, avatar_url = NULL, deleted_at = $2, updated_at = $2
+        `UPDATE users SET email = NULL, name = NULL, avatar_url = NULL, password_hash = NULL,
+                deleted_at = $2, updated_at = $2
          WHERE id = $1`,
         [id, at],
       );
@@ -283,6 +285,14 @@ export class PgStore implements Store {
     const rows = await this.query(
       'UPDATE users SET role = $2, updated_at = now() WHERE id = $1 RETURNING *',
       [id, role],
+    );
+    return rows[0] ? mapUser(rows[0]) : null;
+  }
+
+  async userSetPassword(id: string, hash: string | null): Promise<UserRow | null> {
+    const rows = await this.query(
+      `UPDATE users SET password_hash = $2, updated_at = now() WHERE id = $1 RETURNING *`,
+      [id, hash],
     );
     return rows[0] ? mapUser(rows[0]) : null;
   }

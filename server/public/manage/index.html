@@ -21,18 +21,44 @@
         </a>
         <h1>Панель управления</h1>
         <p class="auth__lead">
-          Доступ только для администраторов. Вход через OAuth — пароли не хранятся и не передаются.
+          Вход для администраторов — логин и пароль. OAuth для панели не нужен
+          и не обязателен: аккаунт и пароль создаёт сервер при старте.
         </p>
-        <div class="auth__providers" id="auth-providers"></div>
-        <form class="auth__dev" id="dev-form" hidden>
-          <label for="dev-email">Dev-вход (только локальная разработка)</label>
-          <div class="auth__dev-row">
-            <input id="dev-email" type="email" placeholder="admin@shelter.local" autocomplete="username" required />
-            <button class="btn btn--ghost btn--md" type="submit">Войти</button>
-          </div>
-          <p class="auth__hint">Dev-аккаунт не даёт подписку и не является оплатой.</p>
+        <form class="auth__form" id="login-form" autocomplete="on">
+          <label class="auth__label" for="login-email">Email</label>
+          <input class="input" id="login-email" type="email" placeholder="admin@shelter.local"
+                 autocomplete="username" required />
+          <label class="auth__label" for="login-password">Пароль</label>
+          <input class="input" id="login-password" type="password" placeholder="••••••••••••"
+                 autocomplete="current-password" required />
+          <button class="btn btn--primary btn--md auth__submit" type="submit">Войти в панель</button>
         </form>
+        <div class="auth__demo" id="auth-demo" hidden>
+          <div class="auth__demo-head">
+            <span class="pill pill--warn">демо-доступ</span>
+            <button class="btn btn--ghost btn--sm" id="auth-demo-fill" type="button">Подставить</button>
+          </div>
+          <p class="auth__demo-text mono" id="auth-demo-text"></p>
+          <p class="auth__hint">
+            Демо-пароль существует только вне production: в боевом режиме сервер
+            с ним не стартует, а пароль задаётся переменной ADMIN_PASSWORD.
+          </p>
+        </div>
         <p class="auth__error" id="auth-error" role="alert" hidden></p>
+        <details class="auth__extra">
+          <summary>Служебное: dev-вход аккаунтом приложения (не админ)</summary>
+          <form class="auth__dev" id="dev-form">
+            <label for="dev-email">Email аккаунта приложения</label>
+            <div class="auth__dev-row">
+              <input id="dev-email" type="email" placeholder="user@shelter.local" autocomplete="username" required />
+              <button class="btn btn--ghost btn--md" type="submit">Войти</button>
+            </div>
+            <p class="auth__hint">
+              Dev-вход создаёт обычный аккаунт без подписки и без роли администратора.
+              Доступен только при DEV_LOGIN_ENABLED и выключен в production.
+            </p>
+          </form>
+        </details>
       </div>
     </section>
 
