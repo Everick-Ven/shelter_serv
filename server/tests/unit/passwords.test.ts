@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEMO_ADMIN_PASSWORD,
   hashPassword,
   verifyPassword,
   verifyPasswordConstantTime,
@@ -23,7 +22,7 @@ describe('passwords (scrypt)', () => {
   });
 
   it('plaintext не присутствует в хэше', () => {
-    const pwd = 'shelter-demo-admin';
+    const pwd = 'some-password-under-test';
     expect(hashPassword(pwd)).not.toContain(pwd);
     expect(hashPassword(pwd).startsWith('scrypt$16384$')).toBe(true);
   });
@@ -40,8 +39,8 @@ describe('passwords (scrypt)', () => {
   it('constant-time обёртка: без хэша ответ false, тайминговая ветка выполняется', () => {
     expect(verifyPasswordConstantTime('any', null)).toBe(false);
     expect(verifyPasswordConstantTime('any', undefined)).toBe(false);
-    const hash = hashPassword(DEMO_ADMIN_PASSWORD);
-    expect(verifyPasswordConstantTime(DEMO_ADMIN_PASSWORD, hash)).toBe(true);
+    const hash = hashPassword('demo-password');
+    expect(verifyPasswordConstantTime('demo-password', hash)).toBe(true);
     expect(verifyPasswordConstantTime('other', hash)).toBe(false);
   });
 });

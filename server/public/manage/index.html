@@ -20,7 +20,7 @@
           <span>SHELTER</span>
         </a>
         <h1>Панель управления</h1>
-        <p class="auth__lead">Вход для администраторов: логин и пароль.</p>
+        <p class="auth__lead">Вход для администраторов.</p>
         <form class="auth__form" id="login-form" autocomplete="on">
           <label class="auth__label" for="login-email">Логин или email</label>
           <input class="input" id="login-email" type="text" placeholder="admin"
@@ -30,14 +30,13 @@
                  autocomplete="current-password" required />
           <button class="btn btn--primary btn--md auth__submit" type="submit">Войти в панель</button>
         </form>
-        <div class="auth__demo" id="auth-demo" hidden>
-          <div class="auth__demo-head">
-            <span class="pill pill--warn">демо-доступ</span>
-            <button class="btn btn--ghost btn--sm" id="auth-demo-fill" type="button">Подставить</button>
-          </div>
-          <p class="auth__demo-text mono" id="auth-demo-text"></p>
-          <p class="auth__hint">В production демо-пароль отключён: пароль задаёт ADMIN_PASSWORD.</p>
-        </div>
+        <button class="btn btn--primary btn--md auth__submit" id="demo-login" type="button" hidden>
+          Демо-вход без пароля
+        </button>
+        <p class="auth__hint" id="demo-hint" hidden>
+          Локальный режим: демо-вход создаёт администратора без пароля.
+          В production кнопки нет — вход только по паролю ADMIN_PASSWORD.
+        </p>
         <p class="auth__error" id="auth-error" role="alert" hidden></p>
         <details class="auth__extra">
           <summary>Dev-вход аккаунтом приложения</summary>

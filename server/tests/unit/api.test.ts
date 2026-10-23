@@ -964,28 +964,22 @@ describe('DELETE /api/v1/me — удаление данных и отзыв се
 });
 
 // ==========================================================================
-describe('админка: вход логином и паролем (без OAuth)', () => {
+describe('админка: демо-вход кнопкой и пароль из env', () => {
   const EMAIL = 'admin@shelter.local';
-  const LOGIN = 'admin';
-  const DEMO = '1234567890';
 
-  function login(email: string, password: string) {
+  function login(loginName: string, password: string) {
     return t.app.inject({
       method: 'POST',
       url: '/manage/api/login',
-      payload: { email, password },
+      payload: { email: loginName, password },
     });
   }
+  function demoLogin(app = t.app) {
+    return app.inject({ method: 'POST', url: '/manage/api/demo-login', payload: {} });
+  }
 
-  it('bootstrap при старте создаёт админа: роль admin + scrypt-хэш', async () => {
-    const user = await t.store.userByEmail(EMAIL);
-    expect(user).not.toBeNull();
-    expect(user!.role).toBe('admin');
-    expect(user!.passwordHash).toMatch(/^scrypt\$16384\$/);
-  });
-
-  it('демо-доступ работает сразу: логин admin и пароль 1234567890', async () => {
-    const res = await login(LOGIN, DEMO);
+  it('кнопка демо-входа пускает в панель без пароля (вне production)', async () => {
+    const res = await demoLogin();
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({ ok: true, user: { email: EMAIL, role: 'admin' } });
     const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME);
@@ -999,19 +993,54 @@ describe('админка: вход логином и паролем (без OAut
     expect(overview.statusCode).toBe(200);
   });
 
+  it('демо-вход не ставит аккаунту пароль: парольный вход без ADMIN_PASSWORD закрыт', async () => {
+    await demoLogin();
+    const user = await t.store.userByEmail(EMAIL);
+    expect(user!.passwordHash).toBeNull();
+    const res = await login('admin', 'whatever-password');
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('providers сообщает о кнопке демо-входа только вне production', async () => {
+    const res = await t.app.inject({ method: 'GET', url: '/api/v1/auth/providers' });
+    expect(res.json().adminLogin).toMatchObject({ enabled: true, demoLogin: true });
+  });
+
+  it('пароль из ADMIN_PASSWORD работает наряду с демо-кнопкой', async () => {
+    const withPass = await createTestApp({ ADMIN_PASSWORD: 'local-admin-pass-1' });
+    try {
+      const providers = await withPass.app.inject({ method: 'GET', url: '/api/v1/auth/providers' });
+      expect(providers.json().adminLogin.demoLogin).toBe(true); // не production
+
+      const good = await withPass.app.inject({
+        method: 'POST',
+        url: '/manage/api/login',
+        payload: { email: EMAIL, password: 'local-admin-pass-1' },
+      });
+      expect(good.statusCode).toBe(200);
+      expect(good.json().user.role).toBe('admin');
+
+      const bad = await withPass.app.inject({
+        method: 'POST',
+        url: '/manage/api/login',
+        payload: { email: EMAIL, password: 'nope' },
+      });
+      expect(bad.statusCode).toBe(401);
+
+      const demo = await withPass.app.inject({ method: 'POST', url: '/manage/api/demo-login', payload: {} });
+      expect(demo.statusCode).toBe(200);
+    } finally {
+      await withPass.close();
+    }
+  });
+
   it('неверный пароль и неизвестный логин дают одну и ту же ошибку 401', async () => {
-    const wrong = await login(LOGIN, 'wrong-password');
-    const unknown = await login('ghost', DEMO);
+    const wrong = await login('admin', 'wrong-password');
+    const unknown = await login('ghost', 'wrong-password');
     expect(wrong.statusCode).toBe(401);
     expect(unknown.statusCode).toBe(401);
     expect(wrong.json().error.code).toBe('invalid_credentials');
     expect(unknown.json().error.code).toBe('invalid_credentials');
-  });
-
-  it('email администратора принимается наряду с коротким логином', async () => {
-    const res = await login(EMAIL, DEMO);
-    expect(res.statusCode).toBe(200);
-    expect(res.json().user.role).toBe('admin');
   });
 
   it('пароль не принимается от аккаунта без роли admin (403)', async () => {
@@ -1023,7 +1052,7 @@ describe('админка: вход логином и паролем (без OAut
   });
 
   it('сессия панели: /manage/api/session и выход через logout', async () => {
-    const res = await login(EMAIL, DEMO);
+    const res = await demoLogin();
     const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME)!;
     const header = { cookie: `${cookie.name}=${cookie.value}` };
 
@@ -1045,14 +1074,14 @@ describe('админка: вход логином и паролем (без OAut
         const r = await limited.app.inject({
           method: 'POST',
           url: '/manage/api/login',
-          payload: { email: EMAIL, password: 'bad' },
+          payload: { email: 'admin', password: 'bad' },
         });
         expect(r.statusCode).toBe(401);
       }
       const blocked = await limited.app.inject({
         method: 'POST',
         url: '/manage/api/login',
-        payload: { email: EMAIL, password: DEMO },
+        payload: { email: 'admin', password: 'bad' },
       });
       expect(blocked.statusCode).toBe(429);
     } finally {
@@ -1060,20 +1089,17 @@ describe('админка: вход логином и паролем (без OAut
     }
   });
 
-  it('DELETE /me стирает пароль: вход прежними данными невозможен', async () => {
-    const res = await login(EMAIL, DEMO);
+  it('DELETE /me отзывает сессию демо-админа', async () => {
+    const res = await demoLogin();
     const cookie = res.cookies.find((c) => c.name === t.env.COOKIE_NAME)!;
-    const del = await t.app.inject({
-      method: 'DELETE',
-      url: '/api/v1/me',
-      headers: { cookie: `${cookie.name}=${cookie.value}` },
-    });
+    const header = { cookie: `${cookie.name}=${cookie.value}` };
+    const del = await t.app.inject({ method: 'DELETE', url: '/api/v1/me', headers: header });
     expect(del.statusCode).toBe(200);
-    const again = await login(EMAIL, DEMO);
-    expect(again.statusCode).toBe(401);
+    const after = await t.app.inject({ method: 'GET', url: '/manage/api/session', headers: header });
+    expect(after.statusCode).toBe(401);
   });
 
-  it('в production демо-подсказки нет, а пароль из env авторитетен', async () => {
+  it('production: кнопки демо-входа нет, вход только паролем из env', async () => {
     const prod = await createTestApp({
       NODE_ENV: 'production',
       STORE_DRIVER: 'pg',
@@ -1088,14 +1114,10 @@ describe('админка: вход логином и паролем (без OAut
     });
     try {
       const providers = await prod.app.inject({ method: 'GET', url: '/api/v1/auth/providers' });
-    expect(providers.json().adminLogin.demo).toBeNull();
+      expect(providers.json().adminLogin.demoLogin).toBe(false);
 
-      const demo = await prod.app.inject({
-        method: 'POST',
-        url: '/manage/api/login',
-        payload: { email: 'ops@shelter.example', password: DEMO },
-      });
-      expect(demo.statusCode).toBe(401);
+      const demo = await prod.app.inject({ method: 'POST', url: '/manage/api/demo-login', payload: {} });
+      expect(demo.statusCode).toBe(403);
 
       const good = await prod.app.inject({
         method: 'POST',
@@ -1109,7 +1131,7 @@ describe('админка: вход логином и паролем (без OAut
     }
   });
 
-  it('production не стартует с демо-паролем (fail-closed конфигурация)', async () => {
+  it('production не стартует без ADMIN_PASSWORD (fail-closed конфигурация)', async () => {
     expect(() =>
       testEnv({
         NODE_ENV: 'production',
@@ -1118,8 +1140,18 @@ describe('админка: вход логином и паролем (без OAut
         COOKIE_SECURE: 'true',
         PAYMENT_PROVIDER: 'yookassa',
         DEV_LOGIN_ENABLED: 'false',
-        ADMIN_PASSWORD: '1234567890',
       }),
-    ).toThrow(/demo password/);
+    ).toThrow(/ADMIN_PASSWORD is required/);
+    expect(() =>
+      testEnv({
+        NODE_ENV: 'production',
+        STORE_DRIVER: 'pg',
+        PUBLIC_BASE_URL: 'https://shelter.example',
+        COOKIE_SECURE: 'true',
+        PAYMENT_PROVIDER: 'yookassa',
+        DEV_LOGIN_ENABLED: 'false',
+        ADMIN_PASSWORD: 'short-pass',
+      }),
+    ).toThrow(/12 chars/);
   });
 });

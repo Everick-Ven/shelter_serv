@@ -62,9 +62,37 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
      */
     adminLogin: {
       enabled: true,
-      demo: app.deps.adminAuth.demoCredentials(),
+      /** Кнопка «Демо-вход» без пароля: только вне production. */
+      demoLogin: app.deps.adminAuth.demoLoginEnabled(),
     },
   }));
+
+  /**
+   * Демо-вход в панель БЕЗ пароля (только вне production): одна кнопка на
+   * экране входа. В production отвечает 403 — доступ даёт только пароль.
+   */
+  app.post(
+    '/manage/api/demo-login',
+    {
+      config: {
+        rateLimit: { max: env.RATE_LIMIT_AUTH_MAX, timeWindow: env.RATE_LIMIT_AUTH_WINDOW },
+      },
+    },
+    async (request, reply) => {
+      if (!app.deps.adminAuth.demoLoginEnabled()) {
+        throw forbidden('demo_login_disabled', 'Демо-вход отключён в production');
+      }
+      const user = await app.deps.adminAuth.ensureDemoAdmin();
+      const session = await sessions.issue(user, {
+        userAgent: request.headers['user-agent'] ?? null,
+        ip: request.ip,
+      });
+      reply.setCookie(env.COOKIE_NAME, session.token, sessions.cookieOptions(session.expiresAt));
+      await store.eventInsert('admin.demo_login', user.id, null);
+      request.log.info({ userId: user.id }, 'admin demo login (no password, non-production)');
+      return { ok: true, user: publicUser(user) };
+    },
+  );
 
   /**
    * Вход в панель `/manage`: логин + пароль. Работает без настроенного OAuth.

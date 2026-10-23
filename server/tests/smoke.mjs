@@ -170,59 +170,65 @@ await check('GET /api/v1/config отдаёт публичную конфигур
   assert(res.json?.name === 'SHELTER', `name=${res.json?.name}`);
 });
 
-// ------------------------------------- панель /manage: вход логином и паролем
-// Работает БЕЗ OAuth: сервер сам создаёт админа при старте. Демо-пароль
-// сервер отдаёт только вне production (adminLogin.demo), в бою берём env.
+// ----------------------------------------- панель /manage: демо-вход и пароль
+// Локально пароль не нужен: кнопка «Демо-вход» создаёт сессию администратора.
+// В production кнопки нет — работает только пароль из ADMIN_PASSWORD.
 {
   const providers = await request('/api/v1/auth/providers');
   assert(providers.status === 200, `providers status ${providers.status}`);
-  const demo = providers.json?.adminLogin?.demo ?? null;
-  const adminEmail = demo?.email ?? ADMIN_EMAIL;
-  const password = demo?.password ?? process.env.ADMIN_PASSWORD ?? '';
+  const demoOn = !!providers.json?.adminLogin?.demoLogin;
+  const envPassword = process.env.ADMIN_PASSWORD ?? '';
 
   await check('POST /manage/api/login: неверный пароль отклоняется (401)', async () => {
     const res = await request('/manage/api/login', {
       method: 'POST',
-      body: { email: adminEmail, password: 'definitely-wrong-password' },
+      body: { email: ADMIN_EMAIL, password: 'definitely-wrong-password' },
     });
     assert(res.status === 401, `status ${res.status}, body ${res.text.slice(0, 160)}`);
     assert(res.json?.error?.code === 'invalid_credentials', `code=${res.json?.error?.code}`);
   });
 
-  if (!password) {
-    await check('production: демо-подсказки нет (adminLogin.demo = null)', async () => {
-      assert(demo === null, 'демо-пароль виден в production!');
-    });
-  } else {
-    let adminCookie = null;
-    await check('POST /manage/api/login: админ входит логином+паролем без OAuth', async () => {
-      const res = await request('/manage/api/login', {
-        method: 'POST',
-        body: { email: adminEmail, password },
-      });
+  let adminCookie = null;
+  if (demoOn) {
+    await check('POST /manage/api/demo-login: кнопка демо-входа пускает без пароля', async () => {
+      const res = await request('/manage/api/demo-login', { method: 'POST', body: {} });
       assert(res.status === 200, `status ${res.status}, body ${res.text.slice(0, 200)}`);
       assert(res.json?.user?.role === 'admin', `role=${res.json?.user?.role}`);
       adminCookie = cookieFrom(res);
       assert(adminCookie, 'cookie сессии не установлена');
       return `email=${res.json.user.email}`;
     });
-
-    if (adminCookie) {
-      await check('GET /manage/api/session и /manage/api/overview после парольного входа', async () => {
-        const session = await request('/manage/api/session', { cookie: adminCookie });
-        assert(session.status === 200 && session.json?.user?.role === 'admin', `session ${session.status}`);
-        const overview = await request('/manage/api/overview', { cookie: adminCookie });
-        assert(overview.status === 200, `overview ${overview.status}`);
-        return `users=${overview.json?.metrics?.usersTotal}`;
+  } else if (envPassword) {
+    await check('POST /manage/api/login: вход паролем из ADMIN_PASSWORD', async () => {
+      const res = await request('/manage/api/login', {
+        method: 'POST',
+        body: { email: ADMIN_EMAIL, password: envPassword },
       });
+      assert(res.status === 200, `status ${res.status}, body ${res.text.slice(0, 200)}`);
+      adminCookie = cookieFrom(res);
+      return `email=${ADMIN_EMAIL}`;
+    });
+  } else {
+    await check('production: кнопки демо-входа нет (adminLogin.demoLogin = false)', async () => {
+      assert(demoOn === false, 'демо-вход доступен в production!');
+    });
+  }
 
-      await check('POST /manage/api/logout отзывает сессию панели', async () => {
-        const out = await request('/manage/api/logout', { method: 'POST', cookie: adminCookie, body: {} });
-        assert(out.status === 200, `logout ${out.status}`);
-        const after = await request('/manage/api/session', { cookie: adminCookie });
-        assert(after.status === 401, `сессия жива после logout: ${after.status}`);
-      });
-    }
+  if (adminCookie) {
+    await check('GET /manage/api/session и /manage/api/overview после входа', async () => {
+      const session = await request('/manage/api/session', { cookie: adminCookie });
+      assert(session.status === 200 && session.json?.user?.role === 'admin', `session ${session.status}`);
+      const overview = await request('/manage/api/overview', { cookie: adminCookie });
+      assert(overview.status === 200, `overview ${overview.status}`);
+      return `users=${overview.json?.metrics?.usersTotal}`;
+    });
+
+    await check('POST /manage/api/logout отзывает сессию панели', async () => {
+      const out = await request('/manage/api/logout', { method: 'POST', cookie: adminCookie, body: {} });
+      assert(out.status === 200, `logout ${out.status}`);
+      const after = await request('/manage/api/session', { cookie: adminCookie });
+      assert(after.status === 401, `сессия жива после logout: ${after.status}`);
+    });
   }
 }
 

@@ -143,20 +143,24 @@
     var cfg = null;
     try { cfg = await api('/api/v1/auth/providers'); } catch (e) { cfg = null; }
 
-    // Демо-подсказка: только вне production (сервер отдаёт demo = null в бою).
-    var demo = cfg && cfg.adminLogin ? cfg.adminLogin.demo : null;
-    var demoBox = $('#auth-demo');
-    if (demo) {
-      $('#auth-demo-text').textContent = demo.login + '  /  ' + demo.password;
-      demoBox.hidden = false;
-      $('#auth-demo-fill').onclick = function () {
-        $('#login-email').value = demo.login;
-        $('#login-password').value = demo.password;
-        $('#login-password').focus();
-      };
-    } else {
-      demoBox.hidden = true;
-    }
+    // Кнопка демо-входа без пароля: только вне production.
+    var demoBtn = $('#demo-login');
+    var demoHint = $('#demo-hint');
+    var demoOn = !!(cfg && cfg.adminLogin && cfg.adminLogin.demoLogin);
+    demoBtn.hidden = !demoOn;
+    demoHint.hidden = !demoOn;
+    demoBtn.onclick = async function () {
+      errorEl.hidden = true;
+      demoBtn.disabled = true;
+      try {
+        await api('/manage/api/demo-login', { method: 'POST', body: {} });
+        await boot();
+      } catch (e) {
+        errorEl.textContent = e.message || 'Демо-вход не удался';
+        errorEl.hidden = false;
+        demoBtn.disabled = false;
+      }
+    };
 
     // Основной вход: логин + пароль, без OAuth.
     $('#login-form').onsubmit = async function (ev) {

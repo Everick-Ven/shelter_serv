@@ -16,9 +16,6 @@ const KEY_LEN = 64;
 const SALT_LEN = 16;
 
 export const DEMO_ADMIN_EMAIL = 'admin@shelter.local';
-/** Демо-вход локальной панели: логин `admin`, пароль `1234567890`. */
-export const DEMO_ADMIN_LOGIN = 'admin';
-export const DEMO_ADMIN_PASSWORD = '1234567890';
 
 export function hashPassword(plain: string): string {
   const salt = randomBytes(SALT_LEN);

@@ -1,22 +1,9 @@
 import type { Env } from '../config.js';
 import type { Store, UserRow } from '../db/types.js';
 import { forbidden, unauthorized } from '../http/errors.js';
-import {
-  DEMO_ADMIN_EMAIL,
-  DEMO_ADMIN_LOGIN,
-  DEMO_ADMIN_PASSWORD,
-  hashPassword,
-  verifyPasswordConstantTime,
-} from '../lib/passwords.js';
+import { hashPassword, verifyPasswordConstantTime } from '../lib/passwords.js';
 
-export interface AdminDemoCredentials {
-  /** Короткий логин для экрана входа (по умолчанию `admin`). */
-  login: string;
-  email: string;
-  password: string;
-  /** true, если это встроенный демо-пароль (не задан через env). */
-  isDemo: boolean;
-}
+
 
 /**
  * Вход администратора: логин + пароль, независимо от OAuth.
@@ -29,8 +16,9 @@ export interface AdminDemoCredentials {
  * Безопасность:
  *  - в БД только scrypt-хэш с солью, plaintext нигде не появляется;
  *  - проверка в constant-time, отсутствие аккаунта неотличимо по таймингу;
- *  - демо-пароль существует ТОЛЬКО вне production; в production конфигурация
- *    с ним не стартует (см. инварианты в config.ts);
+ *  - демо-вход без пароля существует ТОЛЬКО вне production: кнопка на экране
+ *    входа создаёт сессию локального администратора; в production.endpoint
+ *    отключён, остаётся пароль из ADMIN_PASSWORD;
  *  - парольный вход даёт доступ только аккаунтам с ролью `admin`.
  */
 export class AdminAuthService {
@@ -40,13 +28,27 @@ export class AdminAuthService {
     return this.env.NODE_ENV === 'production';
   }
 
-  /** Учётные данные для подсказки на экране входа (только вне production). */
-  demoCredentials(): AdminDemoCredentials | null {
-    if (this.isProduction) return null;
+  /** Показывать ли кнопку «Демо-вход» (без пароля): только вне production. */
+  demoLoginEnabled(): boolean {
+    return !this.isProduction;
+  }
+
+  /**
+   * Демо-вход без пароля: локальный аккаунт администратора создаётся при
+   * необходимости и получает сессию. Пароль при этом НЕ ставится: в боевом
+   * режиме доступ даёт только ADMIN_PASSWORD.
+   */
+  async ensureDemoAdmin(): Promise<UserRow> {
     const email = this.env.ADMIN_EMAIL;
-    const login = this.env.ADMIN_LOGIN;
-    if (this.env.ADMIN_PASSWORD) return { login, email, password: this.env.ADMIN_PASSWORD, isDemo: false };
-    return { login: DEMO_ADMIN_LOGIN, email, password: DEMO_ADMIN_PASSWORD, isDemo: true };
+    let user = await this.store.userByEmail(email);
+    if (!user || user.deletedAt) {
+      user = await this.store.userCreate({ email, name: 'SHELTER Admin', avatarUrl: null, role: 'admin' });
+      await this.store.subscriptionUpsert(user.id, { status: 'none' });
+    }
+    if (user.role !== 'admin') {
+      user = (await this.store.userSetRole(user.id, 'admin')) ?? user;
+    }
+    return user;
   }
 
   /**
@@ -74,8 +76,6 @@ export class AdminAuthService {
       // Конфигурация с этим не стартует (инвариант), здесь — страховка.
       return { email, created: false, passwordSet: false };
     }
-    const password = explicit ?? DEMO_ADMIN_PASSWORD;
-
     let user = await this.store.userByEmail(email);
     let created = false;
     if (!user || user.deletedAt) {
@@ -92,10 +92,9 @@ export class AdminAuthService {
       user = (await this.store.userSetRole(user.id, 'admin')) ?? user;
     }
 
-    const fresh = await this.store.userById(user.id);
     let passwordSet = false;
-    if (explicit || !fresh?.passwordHash) {
-      await this.store.userSetPassword(user.id, hashPassword(password));
+    if (explicit) {
+      await this.store.userSetPassword(user.id, hashPassword(explicit));
       passwordSet = true;
     }
     return { email, created, passwordSet };
@@ -120,5 +119,3 @@ export class AdminAuthService {
     return user;
   }
 }
-
-export { DEMO_ADMIN_EMAIL, DEMO_ADMIN_LOGIN, DEMO_ADMIN_PASSWORD };

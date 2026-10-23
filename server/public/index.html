@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>SHELTER — браузер, который не соглашается следить</title>
-  <meta name="description" content="SHELTER — десктоп-браузер на Chromium 154: трекеры отменяются на сетевом уровне, пространства изолируют сессии, «Призрак» не пишет на диск. Доски с end-to-end шифрованием." />
+  <title>SHELTER — браузер для работы: защищает вас и ведёт ваши задачи</title>
+  <meta name="description" content="Большая часть работы происходит в браузере. SHELTER защищает вас и ваши данные четырьмя контурами защит и изоляцией сессий — и оптимизирует рабочие процессы встроенными досками задач, Pomodoro и менеджером эффективности." />
   <meta name="theme-color" content="#0b0b0d" />
   <link rel="stylesheet" href="/assets/site.css" />
   <link rel="icon" href="/assets/img/app-icon.png" type="image/png" />
@@ -16,9 +16,9 @@
     <div class="bar__in">
       <a class="bar__mark" href="#top">SHELTER</a>
       <nav class="bar__links">
-        <a href="#isolation">Изоляция</a>
-        <a href="#protections">Защиты</a>
-        <a href="#boards">Доски</a>
+        <a href="#work">Задачи</a>
+        <a href="#protections">Защита</a>
+        <a href="#data">Данные</a>
         <a href="#compare">Сравнение</a>
         <a href="#premium">Premium</a>
       </nav>
@@ -30,15 +30,16 @@
   </header>
 
   <main id="main">
-    <!-- Утверждение 1: это убежище, потому что оболочка не соглашается -->
+    <!-- Тезис: работа живёт в браузере, значит там же должны быть защита и инструменты -->
     <section class="hero" id="top">
       <div class="wrap hero__grid">
         <div class="hero__text">
-          <h1>Браузер, который не соглашается следить</h1>
+          <h1>Работа происходит в браузере</h1>
           <p class="lead">
-            Окно «примите cookies» — это ваше согласие, полученное обманом усталости.
-            SHELTER решает сам: рекламные и трекинговые запросы отменяются до выхода в сеть,
-            минимальный технический набор cookies подтверждается до первого кадра баннера.
+            Почта, CRM, документы, созвоны и мессенджеры — весь рабочий день открыт во вкладках.
+            SHELTER делает это место своим: встроенные доски задач, Pomodoro и менеджер
+            эффективности организуют процессы, а четыре контура защит и изоляция сессий
+            берегут вас и ваши данные, пока вы работаете.
           </p>
           <div class="hero__cta">
             <a class="cta cta--lg" href="#download">Скачать для Windows или macOS</a>
@@ -46,8 +47,8 @@
           <p class="hero__meta">Chromium 154 · CEF 154.0.32 · Windows x64 · macOS Intel</p>
         </div>
 
-        <!-- Фрагмент реального интерфейса продукта -->
-        <figure class="win" data-ui aria-label="Окно SHELTER: пространства, вкладки и панель защит">
+        <!-- Фрагмент реального интерфейса: рабочий день внутри браузера -->
+        <figure class="win" data-ui aria-label="Окно SHELTER: задачи дня, Pomodoro и панель защит">
           <div class="win__bar">
             <span class="win__dot win__dot--r"></span><span class="win__dot win__dot--y"></span><span class="win__dot win__dot--g"></span>
             <span class="win__space win__space--a">Личное</span>
@@ -56,14 +57,29 @@
             <span class="win__url">shelter://app/</span>
           </div>
           <div class="win__tabs">
-            <span class="win__tab is-on">Почта · работа</span>
+            <span class="win__tab is-on">Доска · неделя</span>
+            <span class="win__tab">Почта · работа</span>
             <span class="win__tab">CRM · сделки</span>
-            <span class="win__tab win__tab--g">Призрак</span>
           </div>
-          <div class="win__body">
-            <div class="win__shield">
-              <b><span id="blocked-count" data-target="1284">0</span> трекеров заблокировано сегодня</b>
-              <span>пространство «Работа» · сетевой уровень и косметика</span>
+          <div class="win__body win__body--split">
+            <div class="win__tasks">
+              <b>Сегодня</b>
+              <ul>
+                <li><i class="st st--done"></i>Согласовать смету · проект «Фасад»</li>
+                <li><i class="st st--run"></i>Ответить юристу · до 15:00</li>
+                <li><i class="st st--todo"></i>Ревью макета лендинга</li>
+              </ul>
+              <span class="win__repeat">повторы и напоминания включены</span>
+            </div>
+            <div class="win__widgets">
+              <div class="win__pomo">
+                <b>25:00</b>
+                <span>фокус-сессия Помодоро</span>
+              </div>
+              <div class="win__pomo win__pomo--guard">
+                <b><span id="blocked-count" data-target="1284">0</span></b>
+                <span>трекеров заблокировано сегодня</span>
+              </div>
               <ul class="win__prots">
                 <li class="is-on">Трекеры и реклама</li>
                 <li class="is-on">Автосогласие cookies</li>
@@ -76,41 +92,55 @@
       </div>
     </section>
 
-    <!-- Утверждение 2: изоляция конкретна -->
-    <section id="isolation">
+    <!-- Тезис 2: рабочие процессы оптимизируют встроенные задачи -->
+    <section id="work">
       <div class="wrap">
-        <h2>Каждое пространство — отдельная сессия</h2>
+        <h2>Задачи живут рядом с вкладками, а не в отдельном сервисе</h2>
         <p class="lead">
-          Пространство — это собственный контекст запросов Chromium со своим каталогом профиля:
-          cookies и хранилища «Личного» и «Работы» не пересекаются, как не пересекались бы два браузера.
+          Планировщик встроен в оболочку: не нужно держать десятым расширением чужой трекер
+          задач, который читает ваши рабочие списки. Доска открывается поверх работы и уходит
+          в своё пространство, когда пора вернуться к вкладкам.
         </p>
         <div class="cols cols--3">
           <div class="col">
-            <h3>Пространства</h3>
-            <p><code>persist:space-&lt;key&gt;</code> — отдельный <code>CefRequestContext</code>
-              и каталог профиля. Рекламодатель рабочего сервиса не видит вас в личном.</p>
+            <h3>Доски и задачи</h3>
+            <p>Проекты, исполнители, приоритеты, сроки, статусы, форматы и теги, входящие —
+              в Inbox. Повторы задач и напоминания настраиваются прямо в карточке.</p>
           </div>
           <div class="col">
-            <h3>Призрак</h3>
-            <p><code>temp:ghost-&lt;key&gt;</code> — контекст только в памяти: история, cookies и кэш
-              не пишутся на диск, закрыли вкладку — контекст освобождён сразу.</p>
+            <h3>Неделя и месяц</h3>
+            <p>Неделя с понедельника — рабочий ритм со встречами и исполнителями; месяц —
+              компактная сетка с полосами отсутствий и счётчиками часов Work day, Truancy, Vacation.</p>
           </div>
           <div class="col">
-            <h3>Расширения</h3>
-            <p>Распакованные пакеты (Web Store по ID, .crx/.zip): manifest v3 отдаётся движку,
-              v2 оболочка обслуживает сама; статус проверяется ответом самого расширения.</p>
+            <h3>Помодоро и эффективность</h3>
+            <p>Фокус-сессии с таймером в разделе виджетов и менеджер эффективности:
+              сколько часов ушло на работу, отсутствие и отдых — без внешних сервисов учёта.</p>
           </div>
+        </div>
+        <div class="shots">
+          <figure>
+            <img src="/assets/img/board-week.jpg" width="460" height="345" loading="lazy"
+                 alt="Неделя в доске SHELTER: колонки дней и карточки задач с участниками и статусами" />
+            <figcaption>Неделя: встречи, задачи и исполнители одного пространства.</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/img/board-month.jpg" width="460" height="460" loading="lazy"
+                 alt="Месяц в доске SHELTER: календарь с полосами отсутствий и счётчиками часов" />
+            <figcaption>Месяц: полосы отсутствий и счётчики часов по типам дней.</figcaption>
+          </figure>
         </div>
       </div>
     </section>
 
-    <!-- Утверждение 3: четыре контура решает оболочка -->
+    <!-- Тезис 3: защита вас и данных во время работы -->
     <section id="protections" class="field">
       <div class="wrap">
-        <h2>Четыре контура защиты решает оболочка, а не вы</h2>
+        <h2>Пока вы работаете, оболочка не соглашается следить</h2>
         <p class="lead">
-          Состояние тумблеров доставляется в каждый процесс-рендерер при рождении и при навигации,
-          поэтому защита действует и на страницах, открытых после переключения.
+          Окно «примите cookies» — согласие, полученное усталостью. SHELTER решает сам:
+          рекламные и трекинговые запросы отменяются до выхода в сеть, минимальный технический
+          набор cookies подтверждается до первого кадра баннера.
         </p>
         <div class="cols cols--4">
           <div class="col">
@@ -134,92 +164,113 @@
               за доменом первого лица.</p>
           </div>
         </div>
+        <div class="cols cols--3">
+          <div class="col">
+            <h3>Пространства</h3>
+            <p><code>persist:space-&lt;key&gt;</code> — отдельный контекст запросов Chromium
+              со своим профилем: рабочий CRM и личная почта не видят друг друга.</p>
+          </div>
+          <div class="col">
+            <h3>Призрак</h3>
+            <p><code>temp:ghost-&lt;key&gt;</code> — контекст только в памяти: история, cookies
+              и кэш не пишутся на диск, закрыли вкладку — контекст освобождён сразу.</p>
+          </div>
+          <div class="col">
+            <h3>Секреты под ключом ОС</h3>
+            <p>ChaCha20 + HMAC-SHA256 в browser-процессе, мастер-ключ не передаётся рендереру;
+              Windows защищает ключ DPAPI, macOS — Keychain.</p>
+          </div>
+        </div>
         <p class="note">
-          Секреты шифруются нативно: ChaCha20 + HMAC-SHA256 в browser-процессе, мастер-ключ не
-          передаётся рендереру; Windows защищает ключ DPAPI, macOS — Keychain. «Запасной» рендерер
+          Состояние тумблеров доставляется в каждый процесс-рендерер при рождении и при навигации,
+          поэтому защита действует и на страницах, открытых после переключения. «Запасной» рендерер
           отключён: он мог бы применить устаревшее состояние защит.
         </p>
       </div>
     </section>
 
-    <!-- Утверждение 4: внутри не только браузер -->
-    <section id="boards">
-      <div class="wrap">
-        <h2>Доски, которые сервер не читает</h2>
-        <p class="lead">
-          Планировщик живёт внутри SHELTER: задачи, люди, проекты, сроки. Синхронизация —
-          end-to-end: Ed25519/X25519, фраза восстановления из 12 слов, CRDT-конверты Yjs.
-          Сервер видит размер и время конверта, не содержимое.
-        </p>
-        <div class="shots">
-          <figure>
-            <img src="/assets/img/board-week.jpg" width="460" height="345" loading="lazy"
-                 alt="Неделя в доске SHELTER: колонки дней и карточки задач с участниками и статусами" />
-            <figcaption>Неделя: задачи, встречи и исполнители одного пространства.</figcaption>
-          </figure>
-          <figure>
-            <img src="/assets/img/board-month.jpg" width="460" height="460" loading="lazy"
-                 alt="Месяц в доске SHELTER: календарь с полосами отсутствий и счётчиками часов" />
-            <figcaption>Месяц: полосы отсутствий и счётчики часов Work day, Truancy, Vacation.</figcaption>
-          </figure>
+    <!-- Тезис 4: рабочие данные остаются вашими -->
+    <section id="data">
+      <div class="wrap wrap--2">
+        <div>
+          <h2>Рабочие списки не читают ни провайдер, ни мы</h2>
+          <p class="lead">
+            Синхронизация досок между устройствами проектируется end-to-end: идентичность из
+            12 слов фразы восстановления, ключи Ed25519/X25519, конверты CRDT на Yjs.
+            Сервер видит размер и время конверта — не содержимое.
+          </p>
+          <ul class="no">
+            <li>Фраза восстановления показывается один раз и не попадает ни в логи, ни на сервер.</li>
+            <li>Публичный ID псевдонимен: в нём нет email, имени и внутреннего ID сервиса.</li>
+            <li>Участник, которого удалили с доски, не читает новые изменения: эпоха ключа меняется.</li>
+          </ul>
+        </div>
+        <div class="rel">
+          <h3>Что видит сервер синхронизации</h3>
+          <p>
+            Размер конверта, время отправки, публичные ID отправителя и получателя, статус
+            подписки. Ни тела задач, ни URL, ни ваши пути в логах не появляются: ошибка пишется
+            категорией операции и случайным корреляционным ID.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- Утверждение 5: инкогнито не убежище -->
+    <!-- Тезис 5: сравнение с рабочими привычками -->
     <section id="compare" class="field">
       <div class="wrap">
-        <h2>Инкогнито — не убежище</h2>
-        <p class="lead">Свойства, которые отличают оболочку с изоляцией от способов «спрятаться».</p>
+        <h2>Расширение-планировщик и инкогнито не закрывают рабочий день</h2>
+        <p class="lead">Свойства, которые отличают рабочую оболочку от привычных наборов.</p>
         <div class="tbl">
           <table>
             <thead>
               <tr>
                 <th>Свойство</th>
-                <th>Chrome</th>
+                <th>Chrome + расширения</th>
                 <th>Инкогнито</th>
-                <th>Tor Browser</th>
+                <th>Отдельный планировщик</th>
                 <th>Brave</th>
                 <th class="self">SHELTER</th>
               </tr>
             </thead>
             <tbody>
+              <tr><th>Задачи и Pomodoro встроены в браузер</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">вне браузера</td><td data-v="no">нет</td><td class="self" data-v="yes">доски, неделя, месяц, Pomodoro</td></tr>
               <tr><th>Изоляция сессий по пространствам</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td class="self" data-v="yes">свой контекст и профиль</td></tr>
-              <tr><th>Режим без следов на диске</th><td data-v="no">нет</td><td data-v="part">частично</td><td data-v="yes">да</td><td data-v="part">частично</td><td class="self" data-v="yes">«Призрак» в памяти</td></tr>
-              <tr><th>Блокировка трекеров на сетевом уровне</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">частично</td><td data-v="yes">да</td><td class="self" data-v="yes">да, плюс косметика</td></tr>
+              <tr><th>Блокировка трекеров на сетевом уровне</th><td data-v="part">расширениями</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="yes">да</td><td class="self" data-v="yes">да, плюс косметика</td></tr>
               <tr><th>Согласие cookies без окна баннера</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td class="self" data-v="yes">до первого кадра</td></tr>
-              <tr><th>Секреты под ключом ОС</th><td data-v="part">частично</td><td data-v="part">частично</td><td data-v="part">частично</td><td data-v="part">частично</td><td class="self" data-v="yes">ChaCha20 + DPAPI/Keychain</td></tr>
-              <tr><th>Расширения MV2 без магазина</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">частично</td><td class="self" data-v="yes">распакованные пакеты</td></tr>
-              <tr><th>Облачный аккаунт обязателен</th><td data-v="no">для синхронизации</td><td data-v="no">для синхронизации</td><td data-v="yes">нет</td><td data-v="yes">нет</td><td class="self" data-v="yes">нет</td></tr>
+              <tr><th>Рабочие списки зашифрованы end-to-end</th><td data-v="no">нет</td><td data-v="no">нет</td><td data-v="part">редко</td><td data-v="no">нет</td><td class="self" data-v="yes">CRDT-конверты, ключи у вас</td></tr>
+              <tr><th>Режим без следов на диске</th><td data-v="no">нет</td><td data-v="part">частично</td><td data-v="no">нет</td><td data-v="part">частично</td><td class="self" data-v="yes">«Призрак» в памяти</td></tr>
+              <tr><th>Облачный аккаунт обязателен</th><td data-v="no">для синхронизации</td><td data-v="no">для синхронизации</td><td data-v="no">да</td><td data-v="yes">нет</td><td class="self" data-v="yes">нет</td></tr>
             </tbody>
           </table>
         </div>
         <p class="note">
-          По строкам Chrome, Инкогнито, Tor и Brave — публичные документации этих браузеров;
-          по SHELTER — README и docs/sync-design.md репозитория. «Частично» значит: свойство есть,
-          но ограничено профилем, режимом или платформой.
+          По колонкам Chrome, Инкогнито и Brave — публичные документации этих браузеров;
+          по планировщикам — типовая модель отдельного SaaS-сервиса; по SHELTER — README
+          и docs/sync-design.md репозитория. «Частично» значит: свойство есть, но ограничено
+          профилем, режимом или платформой.
         </p>
       </div>
     </section>
 
-    <!-- Утверждение 6: отказы -->
+    <!-- Тезис 6: отказы -->
     <section id="principles">
       <div class="wrap wrap--2">
         <div>
           <h2>Что мы не делаем сознательно</h2>
-          <p class="lead">Позиция держится отказами не меньше, чем функциями.</p>
+          <p class="lead">Рабочий инструмент держится отказами не меньше, чем функциями.</p>
         </div>
         <ul class="no">
           <li>Телеметрии: ошибки логируются категорией операции и случайным ID, без URL и тел запросов.</li>
           <li>Облака по умолчанию: доски локальны и зашифрованы, синхронизация — только с вашим ключом.</li>
           <li>Автоустановки обновлений: клиент получает уведомление и ссылку на релиз, решает человек.</li>
-          <li>Аккаунта для браузера: вход не нужен ни вкладкам, ни защитам, ни расширениям.</li>
+          <li>Аккаунта для браузера: вход не нужен ни вкладкам, ни защитам, ни доскам.</li>
           <li>Доверия клиенту в оплате: подписку проверяет сервер, локальные поля «premium» ничего не решают.</li>
         </ul>
       </div>
     </section>
 
-    <!-- Утверждение 7: premium проверяет сервер -->
+    <!-- Тезис 7: premium проверяет сервер -->
     <section id="premium" class="field">
       <div class="wrap">
         <h2>Подписку проверяет сервер, а не файл на диске</h2>
@@ -232,7 +283,7 @@
       </div>
     </section>
 
-    <!-- Утверждение 8: обновления из первого источника -->
+    <!-- Тезис 8: обновления из первого источника -->
     <section id="updates">
       <div class="wrap wrap--2">
         <div>
@@ -299,7 +350,7 @@
         <a href="mailto:support@shelter.local" id="footer-support">Поддержка</a>
         <a href="/healthz" id="footer-env">статус сервера</a>
       </nav>
-      <p class="foot__note">© <span id="year">2026</span> · приватность это архитектура, а не обещание</p>
+      <p class="foot__note">© <span id="year">2026</span> · рабочий браузер, который на вашей стороне</p>
     </div>
   </footer>
 

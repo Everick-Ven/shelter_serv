@@ -135,13 +135,12 @@ const envSchema = z.object({
 
   // ---- Вход администратора: логин + пароль ----
   /**
-   * Парольный вход в панель `/manage` — основной способ для оператора.
+   * Парольный вход в панель `/manage` — способ для боевого оператора.
    * OAuth остаётся для аккаунтов приложения, а не для админки.
    *
-   * В development без явного ADMIN_PASSWORD создаётся ДЕМО-доступ
-   * (admin@shelter.local / shelter-demo-admin), чтобы панель можно было
-   * проверить сразу после `docker compose up`. В production демо-пароль
-   * запрещён: ADMIN_PASSWORD обязателен, не короче 12 символов.
+   * Локально пароль не нужен: на экране входа есть кнопка «Демо-вход»
+   * (без пароля, только вне production). В production кнопка отключена,
+   * ADMIN_PASSWORD обязателен и не короче 12 символов.
    */
   ADMIN_EMAIL: z
     .union([z.literal(''), z.string().email()])
@@ -195,9 +194,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       problems.push('PUBLIC_BASE_URL must be https:// in production');
     if (!env.COOKIE_SECURE) problems.push('COOKIE_SECURE must be true in production');
     if (env.DEV_LOGIN_ENABLED) problems.push('DEV_LOGIN_ENABLED must be false in production');
-    if (!env.ADMIN_PASSWORD) problems.push('ADMIN_PASSWORD is required in production (no demo password)');
-    else if (env.ADMIN_PASSWORD === '1234567890')
-      problems.push('ADMIN_PASSWORD must not be the demo password in production');
+    if (!env.ADMIN_PASSWORD) problems.push('ADMIN_PASSWORD is required in production (password login only)');
     else if (env.ADMIN_PASSWORD.length < 12)
       problems.push('ADMIN_PASSWORD must be at least 12 chars in production');
     if (env.PAYMENT_PROVIDER === 'mock')
